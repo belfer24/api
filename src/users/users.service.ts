@@ -4,6 +4,7 @@ import { Model } from "mongoose";
 
 import { UserDto } from "./dto/user.dto";
 import { User, UserDocument } from "./schemas/user.schema";
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -16,7 +17,17 @@ export class UsersService {
       return console.log(`Email ${createUserDto.email} already exists.`);
     }
 
-    const createdUser = this.userModel.create(createUserDto);
+    const saltOrRounds = 10;
+    const hashedPassword = await bcrypt.hash(createUserDto.password, saltOrRounds);
+    const newUser = {
+      email: createUserDto.email,
+      password: hashedPassword,
+    }
+    const createdUser = this.userModel.create(newUser);
     return createdUser;
+  }
+
+  async findUser(email: string): Promise<User | undefined> {
+    return this.userModel.findOne({ email: email });
   }
 }

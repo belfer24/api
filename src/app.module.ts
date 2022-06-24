@@ -6,11 +6,13 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 import { UsersModule } from './users/users.module';
+import { MailsModule } from './mails/mails.module';
+import { AuthModule } from './auth/auth.module';
 
 const uri = process.env.MONGODB_URI
 
 @Module({
-  imports: [MongooseModule.forRoot(uri), UsersModule],
+  imports: [MongooseModule.forRoot(uri), UsersModule, MailsModule, AuthModule],
   controllers: [AppController],
   providers: [AppService],
 })
