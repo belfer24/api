@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Req, Res, Redirect } from "@nestjs/common";
+import { Controller, Get, UseGuards, Req, Res, Body, Post } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { AuthGuard } from "@nestjs/passport";
 
@@ -8,15 +8,28 @@ export class AuthController {
 
   @Get()
   @UseGuards(AuthGuard('windowslive'))
-  async outlookAuth(@Req() req, @Res() res) {
-    console.log(res, req);
+  async outlookAuth(@Body() body) {
+    console.log(body);
   }
 
   @Get('/redirect')
   @UseGuards(AuthGuard('windowslive'))
   outlookAuthRedirect(@Req() req, @Res() res) {
-    this.authService.outlookLogin(req);
+    this.authService.outlookLogin(req); 
 
-    return res.redirect(`chrome-extension://pionipbkhdefhnbclaoipdpkaemepbkb/oauth/oauth.html?email=${req.user.email}&token=${req.user.refreshToken}`)
+    return res.redirect(`chrome-extension://fdidojpkibfdhfbegdffdphabfkfkoce/oauth/oauth.html?email=${req.user.email}&token=${req.user.refreshToken}`)
+  }
+
+  @Post('outlook-redirect-url')
+  async OutlookRedirectUrl(@Body() { chromeExtensionId }) {
+    try {
+      const { redirectUrl } = await this.authService.GetOutlookRedirectUrl({
+        chromeExtensionId,
+      })
+
+      return { data: { redirectUrl } };
+    } catch(error) {
+      console.log(error);
+    }
   }
 }
