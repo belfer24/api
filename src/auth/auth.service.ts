@@ -21,15 +21,16 @@ export class AuthService {
     }
   }
 
+  async OutlookOAuthHandler(params) {
+    try {
+      const { code, state: chromeExtensionId } = params;
+      const { account, refreshToken }: any = await this._MicrosoftHelper.GetAuthData({ code });
 
-  outlookLogin(req) {
-    if (!req.user) {
-      return 'No user from outlook'
-    }
+      const redirectUrl = `chrome-extension://${chromeExtensionId}/oauth/oauth.html?email=${account.username}&token=${refreshToken}&name=${account.name}`
 
-    return {
-      message: 'User information from outlook',
-      user: req.user
+      return { redirectUrl };
+    } catch (error) {
+      throw error
     }
   }
 }

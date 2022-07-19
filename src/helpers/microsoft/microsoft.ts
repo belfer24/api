@@ -25,8 +25,8 @@ export class MicrosoftHelper {
             afterCacheAccess: async cacheContext => {
                 if (cacheContext.cacheHasChanged) {
                     const data = cacheContext.tokenCache.serialize();
-                    const { refreshToken } = JSON.parse(data);
-                    const [{ secret }]:any = Object.values(refreshToken);
+                    const { RefreshToken } = await JSON.parse(data);
+                    const [{ secret }]:any = Object.values(RefreshToken);
 
                     this._refreshToken = secret;
                 }
@@ -67,6 +67,23 @@ export class MicrosoftHelper {
             return url;
         } catch (error) {
             throw error;
+        }
+    }
+
+    public async GetAuthData({ code }) {
+        try {
+            const client = this._CreateOAuthClient();
+            const data = await client.acquireTokenByCode({
+                code,
+                redirectUri: 'http://localhost:3000/auth/redirect',
+                scopes: ['openid', 'email', 'profile', 'offline_access', 'User.Read'],
+            })
+
+            if (!data || !data.account || !data.account.username) throw Error("Error!")
+
+            return { account: data.account, refreshToken: this._refreshToken }
+        } catch (error) {
+            throw error
         }
     }
 }

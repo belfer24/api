@@ -3,7 +3,6 @@ import { UsersModule } from '../users/users.module';
 import { AuthService } from './auth.service';
 import { PassportModule } from '@nestjs/passport';
 import { AuthController } from './auth.controller';
-import { OutlookStrategy } from './outlook.strategy';
 import { MicrosoftHelper } from 'src/helpers/microsoft/microsoft';
 
 @Module({
@@ -11,7 +10,7 @@ import { MicrosoftHelper } from 'src/helpers/microsoft/microsoft';
     UsersModule,
     PassportModule,
   ],
-  providers: [AuthService, OutlookStrategy, MicrosoftHelper],
+  providers: [AuthService, MicrosoftHelper],
   exports: [AuthService],
   controllers: [AuthController],
 })
