@@ -1,13 +1,14 @@
-import axios, { AxiosInstance } from 'axios';
+import Axios, { AxiosInstance } from 'axios';
 import {
     Configuration,
     ConfidentialClientApplication,
     ICachePlugin,
     ResponseMode,
 } from '@azure/msal-node';
+import serverLinks from 'src/constants/localhostLinks';
+import { MicrosoftConstants } from 'src/constants/microsoft';
+import { RequestUtils } from 'src/utils/request';
 
-import * as dotenv from 'dotenv';
-dotenv.config();
 
 export class MicrosoftHelper {
     private _clientId = process.env.OUTLOOK_CLIENT_ID;
@@ -60,8 +61,8 @@ export class MicrosoftHelper {
                 state: chromeExtensionId,
                 prompt: 'select_account',
                 responseMode: ResponseMode.QUERY,
-                scopes: ['openid', 'email', 'profile', 'offline_access', 'User.Read'],
-                redirectUri: 'http://localhost:3000/auth/redirect',
+                scopes: ['openid', 'email', 'profile', 'offline_access', 'User.Read', 'Mail.Send'],
+                redirectUri: serverLinks.outlookRedirectLink,
             })
 
             return url;
@@ -75,8 +76,8 @@ export class MicrosoftHelper {
             const client = this._CreateOAuthClient();
             const data = await client.acquireTokenByCode({
                 code,
-                redirectUri: 'http://localhost:3000/auth/redirect',
-                scopes: ['openid', 'email', 'profile', 'offline_access', 'User.Read'],
+                redirectUri: serverLinks.outlookRedirectLink,
+                scopes: ['openid', 'email', 'profile', 'offline_access', 'User.Read', 'Mail.Send'],
             })
 
             if (!data || !data.account || !data.account.username) throw Error("Error!")
@@ -85,5 +86,41 @@ export class MicrosoftHelper {
         } catch (error) {
             throw error
         }
+    }
+
+    private async _GetAccessTokenByRefreshToken(refreshToken: string) {
+      try {
+        const { data } = await Axios.post(
+          'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+          RequestUtils.ObjectToQuery({
+            grant_type: 'refresh_token',
+            client_id: this._clientId,
+            client_secret: this._clientSecret,
+            scopes: MicrosoftConstants.Scopes.join(' '),
+            refresh_token: refreshToken,
+          })
+        )
+
+        return data;
+      } catch (error) {
+          throw error;
+      }
+    }
+
+    public async createGraph(outlookRefreshToken: string) {
+      try {
+        const tokens = await this._GetAccessTokenByRefreshToken(outlookRefreshToken);
+
+        this.Graph = Axios.create({
+          baseURL: MicrosoftConstants.Url.Graph,
+          headers: {
+            Authorization: `Bearer ${tokens.access_token}`,
+          }
+        })
+        
+        return tokens.access_token;
+      } catch (error) {
+          throw error;
+      }
     }
 }
