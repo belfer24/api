@@ -1,7 +1,11 @@
 import { Controller, Request, Post, UseGuards, Get, Req } from '@nestjs/common';
-import { AuthService } from './auth/auth.service';
-
+import { AppService } from './app.service';
 @Controller()
 export class AppController {
-  constructor(private authService: AuthService) {}
+  constructor(private appService: AppService) {}
+
+  @Get('/')
+  async getHello() {
+    return this.appService.getHello()
+  }
 }
