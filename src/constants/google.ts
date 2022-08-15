@@ -1,9 +1,9 @@
 import serverLinks from "./serverLinks";
 
 const cloudTasksCreds = {
-  project: 'charge-outlook-project',
-  queue: 'outlook-queue',
-  location: 'europe-central2',
+  project: 'outlook-extension-14ab7',
+  queue: 'mails',
+  location: 'us-central1',
   url: serverLinks.cloudTasksRedirectLink,
 }
 
