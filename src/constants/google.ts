@@ -1,4 +1,4 @@
-import serverLinks from "./localhostLinks";
+import serverLinks from "./serverLinks";
 
 const cloudTasksCreds = {
   project: 'charge-outlook-project',

@@ -5,7 +5,7 @@ import {
     ICachePlugin,
     ResponseMode,
 } from '@azure/msal-node';
-import serverLinks from 'src/constants/localhostLinks';
+import serverLinks from 'src/constants/serverLinks';
 import { MicrosoftConstants } from 'src/constants/microsoft';
 import { RequestUtils } from 'src/utils/request';
 
