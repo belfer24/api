@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { MicrosoftHelper } from 'src/helpers/microsoft/microsoft';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User, UserDocument } from 'src/users/schemas/user.schema';
 
 @Injectable()
 export class AuthService {
   constructor(
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+
     private readonly _MicrosoftHelper: MicrosoftHelper,
   ) {}
 
@@ -25,6 +30,15 @@ export class AuthService {
     try {
       const { code, state: chromeExtensionId } = params;
       const { account, refreshToken }: any = await this._MicrosoftHelper.GetAuthData({ code });
+
+      const user = await this.userModel.exists({ email: account.username }).exec();
+      if (!user) {
+        this.userModel.create({
+          email: account.username,
+          refresh_token: refreshToken,
+          createdAt: Date.now()
+        })
+      }
 
       const redirectUrl = `chrome-extension://${chromeExtensionId}/oauth/oauth.html?email=${account.username}&token=${refreshToken}&name=${account.name}`
 

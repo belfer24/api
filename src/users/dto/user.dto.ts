@@ -1,4 +1,4 @@
 export class UserDto {
   readonly email: string;
-  readonly password: string;
+  readonly refresh_token: string;
 }

@@ -12,7 +12,7 @@ export class Mail {
   @Prop()
   addedAt: Date;
 
-  @Prop({type: [Types.ObjectId], ref: User.name})
+  @Prop({type: [Types.ObjectId], ref: "User"})
   userId: string;
 }
 
