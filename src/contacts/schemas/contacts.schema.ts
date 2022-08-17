@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from "mongoose";
-import { User } from "src/users/schemas/user.schema";
 
 export type ContactsDocument = Contacts & Document;
 
@@ -15,7 +14,7 @@ export class Contacts {
   @Prop()
   data;
 
-  @Prop({type: [Types.ObjectId], ref: User.name})
+  @Prop()
   user_id: string;
 }
 
