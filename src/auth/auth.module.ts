@@ -6,6 +6,7 @@ import { AuthController } from './auth.controller';
 import { MicrosoftHelper } from 'src/helpers/microsoft/microsoft';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from 'src/users/schemas/user.schema';
+import { StripeHelper } from 'src/helpers/stripe/stripe';
 
 @Module({
   imports: [
@@ -13,7 +14,7 @@ import { User, UserSchema } from 'src/users/schemas/user.schema';
     UsersModule,
     PassportModule,
   ],
-  providers: [AuthService, MicrosoftHelper],
+  providers: [AuthService, MicrosoftHelper, StripeHelper],
   exports: [AuthService],
   controllers: [AuthController],
 })
