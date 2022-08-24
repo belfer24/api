@@ -36,7 +36,6 @@ export class AuthService {
       const user = await this.userModel.exists({ email: account.username }).exec();
       if (!user) {
         const newCustomer = await this._StripeHelper.CreateCustomer({ email: account.username });
-        console.log(newCustomer);
 
         this.userModel.create({
           email: account.username,

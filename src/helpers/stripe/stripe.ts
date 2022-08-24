@@ -44,6 +44,26 @@ export class StripeHelper {
       })
 
       return session.url;
-    } catch (error) {}
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  public async CustomerCreated(customer) {
+    try {
+      const options: Stripe.SubscriptionCreateParams = {
+        customer: customer.id,
+        collection_method: 'charge_automatically',
+        items: [{ price: StripeConstants.FreePlan, quantity: 1 }],
+        payment_behavior: 'allow_incomplete',
+        proration_behavior: 'always_invoice',
+      }
+
+      const subscription: Stripe.Subscription = await this._Stripe.subscriptions.create(options)
+      
+      return subscription;
+    } catch (error) {
+      throw error;
+    }
   }
 }
