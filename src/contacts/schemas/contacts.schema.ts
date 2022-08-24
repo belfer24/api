@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import * as mongoose from 'mongoose';
 import { Document, Types } from "mongoose";
-import { User } from "src/users/schemas/user.schema";
 
 export type ContactsDocument = Contacts & Document;
 
@@ -15,6 +14,7 @@ export class Contacts {
 
   @Prop()
   userId: string;
+
 }
 
 export const ContactsSchema = SchemaFactory.createForClass(Contacts);

@@ -46,7 +46,7 @@ export class User {
   @Prop()
   billing: Billing;
 
-  @Prop({type: [Types.ObjectId], ref: Mail.name})
+  @Prop()
   mails: Mail[]
 
   @Prop({type: [Types.ObjectId], ref: Contacts.name})
