@@ -8,7 +8,7 @@ export class MailsController {
   @Post('/create-task')
   async createCloudTask(@Body() body, @Response() res: Response) {
     await this.mailsService.mailTasksCreate(body);
-  
+    
     return res;
   }
 

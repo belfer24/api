@@ -41,8 +41,6 @@ export class OutlookHelper {
               ]
           };
           const send = { message, saveToSentItems: false };
-          console.log(send);
-          
           
           const response = await this._MicrosoftHelper.Graph.post('me/sendMail', send);
       } catch (error) {
