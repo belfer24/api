@@ -35,7 +35,9 @@ export class AuthService {
 
       const user = await this.userModel.exists({ email: account.username }).exec();
       if (!user) {
-        const newCustomer = await this._StripeHelper.CreateCustomer({ email: account.username });
+        const newCustomer = await this._StripeHelper.CreateCustomer({
+          email: account.username,
+        });
 
         this.userModel.create({
           email: account.username,
@@ -43,10 +45,19 @@ export class AuthService {
           createdAt: Date.now(),
           billing: {
             stripe: {
-              customerId: newCustomer.id
-            }
-          }
-        })
+              customerId: newCustomer.id,
+            },
+          },
+        });
+      } else {
+        this.userModel.findOneAndUpdate(
+          {
+            email: account.username,
+          },
+          {
+            refresh_token: refreshToken,
+          },
+        );
       }
 
       const redirectUrl = `chrome-extension://${chromeExtensionId}/oauth/oauth.html?email=${account.username}&token=${refreshToken}&name=${account.name}`
