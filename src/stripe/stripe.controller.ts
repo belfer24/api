@@ -1,4 +1,5 @@
 import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { StripeService } from './stripe.service';
 import Stripe from 'stripe';
 
@@ -9,9 +10,9 @@ export class StripeController {
   ) {}
 
   @Post('/create-portal')
-  async createPortal(@Body() body, @Res() res) {
+  async createPortal(@Body() body: {email: string}, @Res() res: Response) {
     const redirectLink = await this.StripeService.createStripeProtal(body);
-    
+
     return res.redirect(redirectLink);
   }
 
@@ -22,6 +23,8 @@ export class StripeController {
 
   @Post('/update-subscription')
   async updateSubscription(@Body() body) {
+    console.log(body);
+    
     const customer = body.data.object;
     
     console.log("Update Subscription: ", body.data.object);
