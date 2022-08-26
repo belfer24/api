@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from 'src/users/schemas/user.schema';
 import { StripeHelper } from 'src/helpers/stripe/stripe';
+import { IAuth } from './auth.inteface';
 
 @Injectable()
 export class AuthService {
@@ -16,11 +17,13 @@ export class AuthService {
 
   async GetOutlookRedirectUrl({
     chromeExtensionId,
+  }: {
+    chromeExtensionId: string;
   }) {
     try {
       const redirectUrl = await this._MicrosoftHelper.CreateRedirectUrl({
         chromeExtensionId,
-      })
+      });
 
       return { redirectUrl };
     } catch (error) {
@@ -28,16 +31,19 @@ export class AuthService {
     }
   }
 
-  async OutlookOAuthHandler(params) {
+  async OutlookOAuthHandler(
+    params: IAuth.Service.OutlookRedirectHandler.Params,
+  ) {
     try {
       const { code, state: chromeExtensionId } = params;
-      const { account, refreshToken }: any = await this._MicrosoftHelper.GetAuthData({ code });
+      const { account, refreshToken }: { account: any; refreshToken: string } =
+        await this._MicrosoftHelper.GetAuthData({ code });
 
-      const user = await this.userModel.exists({ email: account.username }).exec();
+      const user = await this.userModel
+        .exists({ email: account.username })
+        .exec();
       if (!user) {
-        const newCustomer = await this._StripeHelper.CreateCustomer({
-          email: account.username,
-        });
+        const newCustomer = await this._StripeHelper.CreateCustomer({ email: account.username });
 
         this.userModel.create({
           email: account.username,
@@ -45,26 +51,17 @@ export class AuthService {
           createdAt: Date.now(),
           billing: {
             stripe: {
-              customerId: newCustomer.id,
-            },
-          },
-        });
-      } else {
-        this.userModel.findOneAndUpdate(
-          {
-            email: account.username,
-          },
-          {
-            refresh_token: refreshToken,
-          },
-        );
+              customerId: newCustomer.id
+            }
+          }
+        })
       }
 
-      const redirectUrl = `chrome-extension://${chromeExtensionId}/oauth/oauth.html?email=${account.username}&token=${refreshToken}&name=${account.name}`
+      const redirectUrl = `chrome-extension://${chromeExtensionId}/oauth/oauth.html?email=${account.username}&token=${refreshToken}&name=${account.name}`;
 
       return { redirectUrl };
     } catch (error) {
-      throw error
+      throw error;
     }
   }
 }
