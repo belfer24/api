@@ -9,12 +9,11 @@ import { StripeHelper } from 'src/helpers/stripe/stripe';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema}]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     UsersModule,
   ],
   providers: [AuthService, MicrosoftHelper, StripeHelper],
   exports: [AuthService],
   controllers: [AuthController],
 })
-
 export class AuthModule {}

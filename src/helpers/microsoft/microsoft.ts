@@ -26,7 +26,8 @@ export class MicrosoftHelper {
         if (cacheContext.cacheHasChanged) {
           const data = cacheContext.tokenCache.serialize();
           const { RefreshToken } = await JSON.parse(data);
-          const [{ secret }]: { secret: string }[] = Object.values(RefreshToken);
+          const [{ secret }]: { secret: string }[] =
+            Object.values(RefreshToken);
 
           this._refreshToken = secret;
         }

@@ -8,6 +8,8 @@ import { User, UserSchema } from 'src/users/schemas/user.schema';
 @Module({
   controllers: [StripeController],
   providers: [StripeService, StripeHelper],
-  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema}])],
+  imports: [
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+  ],
 })
 export class StripeModule {}
