@@ -57,9 +57,8 @@ export class MailsService {
 
   async sendOutlookMessage(body: IMails.Messages.Message) {
     await this._OutlookHelper.connectToGraph(body.outlookRefreshToken);
-    console.log(body);
+    // await this._OutlookHelper.sendMessage(body.message);
 
-    await this._OutlookHelper.sendMessage(body.message);
     return {};
   }
 }

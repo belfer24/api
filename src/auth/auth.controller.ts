@@ -19,12 +19,12 @@ export class AuthController {
   }
 
   @Get('redirect')
-  async OutlookOAuthHandler(
+  async handleOutlookOAuth(
     @Query() query: IAuth.Controller.OutlookRedirectHandler.Query,
     @Res() res: Response,
   ) {
     const { redirectUrl }: { redirectUrl: string } =
-      await this.authService.OutlookOAuthHandler(query);
+      await this.authService.HandleOutlookOAuth(query);
 
     return res.redirect(redirectUrl);
   }

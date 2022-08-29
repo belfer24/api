@@ -1,11 +1,9 @@
 export namespace IMails {
   export type MessageBody = {
-    message: {
-      to: string;
-      from?: string;
-      subject: string;
-      text: string;
-    };
+    to: string;
+    from?: string;
+    subject: string;
+    text: string;
   };
 
   export namespace CloudTasks {
@@ -19,12 +17,7 @@ export namespace IMails {
 
   export namespace Messages {
     export type Message = {
-      message: {
-        to: string;
-        subject: string;
-        text: string;
-        from?: string;
-      };
+      message: MessageBody
       lastLetter?: boolean;
       outlookRefreshToken?: string;
     };

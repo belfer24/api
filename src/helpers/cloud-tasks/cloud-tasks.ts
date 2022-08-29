@@ -5,7 +5,7 @@ import { google } from '@google-cloud/tasks/build/protos/protos';
 import cloudTasksCreds from 'src/constants/google';
 
 export class CloudTasks {
-  async createCloudTask({ payload, delay }: { payload: any; delay: number }) {
+  async createCloudTask({ payload, delay }: ICloudTasks.Task) {
     const client = new CloudTasksClient({ fallback: true });
 
     const parent = client.queuePath(

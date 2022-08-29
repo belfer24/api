@@ -27,13 +27,14 @@ export class AuthService {
     return { redirectUrl };
   }
 
-  async OutlookOAuthHandler(
+  async HandleOutlookOAuth(
     params: IAuth.Service.OutlookRedirectHandler.Params,
   ) {
     const { code, state: chromeExtensionId } = params;
-    const { account, refreshToken }: { account: any; refreshToken: string } =
+    const { account, refreshToken } =
       await this._MicrosoftHelper.GetAuthData({ code });
-
+    console.log(account);
+    
     const user = await this.userModel
       .exists({ email: account.username })
       .exec();
