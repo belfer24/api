@@ -7,48 +7,36 @@ export class OutlookHelper {
   public async connectToGraph(
     refreshToken: string,
   ): IOutlookHelper.Methods.Connect.Response {
-    try {
-      await this._MicrosoftHelper.createGraph(refreshToken);
-    } catch (error) {
-      throw error;
-    }
+    await this._MicrosoftHelper.createGraph(refreshToken);
   }
 
   public async checkRefreshToken(
     refreshToken: string,
   ): IOutlookHelper.Methods.Available.Response {
-    try {
-      await this.connectToGraph(refreshToken);
+    await this.connectToGraph(refreshToken);
 
-      return true;
-    } catch (error) {
-      throw error;
-    }
+    return true;
   }
 
   public async sendMessage(
     messageData: IOutlookHelper.Methods.Send.Request,
   ): IOutlookHelper.Methods.Send.Response {
-    try {
-      const message = {
-        subject: messageData.subject,
-        body: {
-          contentType: 'HTML',
-          content: messageData.text,
-        },
-        toRecipients: [
-          {
-            emailAddress: {
-              address: messageData.to,
-            },
+    const message = {
+      subject: messageData.subject,
+      body: {
+        contentType: 'HTML',
+        content: messageData.text,
+      },
+      toRecipients: [
+        {
+          emailAddress: {
+            address: messageData.to,
           },
-        ],
-      };
-      const send = { message, saveToSentItems: false };
+        },
+      ],
+    };
+    const send = { message, saveToSentItems: false };
 
-      await this._MicrosoftHelper.Graph.post('me/sendMail', send);
-    } catch (error) {
-      throw error;
-    }
+    await this._MicrosoftHelper.Graph.post('me/sendMail', send);
   }
 }

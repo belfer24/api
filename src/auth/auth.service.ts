@@ -20,50 +20,42 @@ export class AuthService {
   }: {
     chromeExtensionId: string;
   }) {
-    try {
-      const redirectUrl = await this._MicrosoftHelper.CreateRedirectUrl({
-        chromeExtensionId,
-      });
+    const redirectUrl = await this._MicrosoftHelper.CreateRedirectUrl({
+      chromeExtensionId,
+    });
 
-      return { redirectUrl };
-    } catch (error) {
-      throw error;
-    }
+    return { redirectUrl };
   }
 
   async OutlookOAuthHandler(
     params: IAuth.Service.OutlookRedirectHandler.Params,
   ) {
-    try {
-      const { code, state: chromeExtensionId } = params;
-      const { account, refreshToken }: { account: any; refreshToken: string } =
-        await this._MicrosoftHelper.GetAuthData({ code });
+    const { code, state: chromeExtensionId } = params;
+    const { account, refreshToken }: { account: any; refreshToken: string } =
+      await this._MicrosoftHelper.GetAuthData({ code });
 
-      const user = await this.userModel
-        .exists({ email: account.username })
-        .exec();
-      if (!user) {
-        const newCustomer = await this._StripeHelper.CreateCustomer({
-          email: account.username,
-        });
+    const user = await this.userModel
+      .exists({ email: account.username })
+      .exec();
+    if (!user) {
+      const newCustomer = await this._StripeHelper.CreateCustomer({
+        email: account.username,
+      });
 
-        this.userModel.create({
-          email: account.username,
-          refresh_token: refreshToken,
-          createdAt: Date.now(),
-          billing: {
-            stripe: {
-              customerId: newCustomer.id,
-            },
+      this.userModel.create({
+        email: account.username,
+        refresh_token: refreshToken,
+        createdAt: Date.now(),
+        billing: {
+          stripe: {
+            customerId: newCustomer.id,
           },
-        });
-      }
-
-      const redirectUrl = `chrome-extension://${chromeExtensionId}/oauth/oauth.html?email=${account.username}&token=${refreshToken}&name=${account.name}`;
-
-      return { redirectUrl };
-    } catch (error) {
-      throw error;
+        },
+      });
     }
+
+    const redirectUrl = `chrome-extension://${chromeExtensionId}/oauth/oauth.html?email=${account.username}&token=${refreshToken}&name=${account.name}`;
+
+    return { redirectUrl };
   }
 }

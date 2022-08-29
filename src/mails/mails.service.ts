@@ -23,40 +23,36 @@ export class MailsService {
   ) {}
 
   async mailTasksCreate(params: IMails.CloudTasks.Task) {
-    try {
-      const { outlookMessages, outlookRefreshToken, csvData, email } = params;
+    const { outlookMessages, outlookRefreshToken, csvData, email } = params;
 
-      const userFromEmail = await this.userModel.findOne({ email }).exec();
+    const userFromEmail = await this.userModel.findOne({ email }).exec();
 
-      this.contactsModel.create({
-        data: csvData,
-        createdAt: Date.now(),
-        userId: userFromEmail._id,
+    this.contactsModel.create({
+      data: csvData,
+      createdAt: Date.now(),
+      userId: userFromEmail._id,
+    });
+
+    const sent = outlookMessages.length;
+    const delayInSeconds = 10;
+
+    const mailPromises = outlookMessages.map((message, index: number) => {
+      const delay = index * delayInSeconds;
+      const lastMessage = outlookMessages.length - 1 === index;
+
+      return this._CloudTasks.createCloudTask({
+        payload: {
+          message,
+          lastMessage,
+          outlookRefreshToken,
+        },
+        delay,
       });
+    });
 
-      const sent = outlookMessages.length;
-      const delayInSeconds = 10;
+    await Promise.all(mailPromises);
 
-      const mailPromises = outlookMessages.map((message, index: number) => {
-        const delay = index * delayInSeconds;
-        const lastMessage = outlookMessages.length - 1 === index;
-
-        return this._CloudTasks.createCloudTask({
-          payload: {
-            message,
-            lastMessage,
-            outlookRefreshToken,
-          },
-          delay,
-        });
-      });
-
-      await Promise.all(mailPromises);
-
-      return { success: true };
-    } catch (error) {
-      throw error;
-    }
+    return { success: true };
   }
 
   async sendOutlookMessage(body: IMails.Messages.Message) {
