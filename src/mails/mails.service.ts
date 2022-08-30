@@ -4,12 +4,11 @@ import { Model } from 'mongoose';
 import {
   Contacts,
   ContactsDocument,
-} from 'src/contacts/schemas/contacts.schema';
-import { CloudTasks } from 'src/helpers/cloud-tasks/cloud-tasks';
-import { ICloudTasks } from 'src/helpers/cloud-tasks/cloud-tasks.interface';
+} from '@/contacts/schemas/contacts.schema';
+import { CloudTasks } from '@/helpers/cloud-tasks/cloud-tasks';
 
-import { OutlookHelper } from 'src/helpers/outlook/outlook';
-import { User, UserDocument } from 'src/users/schemas/user.schema';
+import { OutlookHelper } from '@/helpers/outlook/outlook';
+import { User, UserDocument } from '@/users/schemas/user.schema';
 import { IMails } from './mails.interface';
 
 @Injectable()
@@ -25,12 +24,12 @@ export class MailsService {
   async mailTasksCreate(params: IMails.CloudTasks.Task) {
     const { outlookMessages, outlookRefreshToken, csvData, email } = params;
 
-    const userFromEmail = await this.userModel.findOne({ email }).exec();
+    const user = await this.userModel.findOne({ email }).exec();
 
     this.contactsModel.create({
       data: csvData,
       createdAt: Date.now(),
-      userId: userFromEmail._id,
+      userId: user?._id,
     });
 
     const sent = outlookMessages.length;
@@ -56,8 +55,8 @@ export class MailsService {
   }
 
   async sendOutlookMessage(body: IMails.Messages.Message) {
-    await this._OutlookHelper.connectToGraph(body.outlookRefreshToken);
-    // await this._OutlookHelper.sendMessage(body.message);
+    await this._OutlookHelper.connectToGraph(body.outlookRefreshToken || '');
+    await this._OutlookHelper.sendMessage(body.message);
 
     return {};
   }

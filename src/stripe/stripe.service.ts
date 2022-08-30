@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { StripeHelper } from 'src/helpers/stripe/stripe';
-import { User, UserDocument } from 'src/users/schemas/user.schema';
+import { StripeHelper } from '@/helpers/stripe/stripe';
+import { User, UserDocument } from '@/users/schemas/user.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import Stripe from 'stripe';
-import { IStripeHelper } from 'src/helpers/stripe/stripe.interface';
 import { IStripeWebhook } from './stripe.interface';
 
 @Injectable()
@@ -16,11 +14,14 @@ export class StripeService {
 
   async createStripeProtal(customer: { email: string }) {
     const user = await this.userModel.findOne({ email: customer.email }).exec();
-    const portalLink = await this._StripeHelper.CreateStripePortal(
-      user.billing.stripe.customerId,
-    );
 
-    return portalLink;
+    if (user) {
+      const portalLink = await this._StripeHelper.CreateStripePortal(
+        user.billing.stripe.customerId,
+      );
+
+      return portalLink;
+    }
   }
 
   async customerCreated(

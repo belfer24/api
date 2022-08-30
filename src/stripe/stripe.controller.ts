@@ -10,7 +10,7 @@ export class StripeController {
 
   @Post('create-portal')
   async createPortal(@Body() body: { email: string }, @Res() res: Response) {
-    const redirectLink = await this.StripeService.createStripeProtal(body);
+    const redirectLink = await this.StripeService.createStripeProtal(body) || '';
 
     return res.redirect(redirectLink);
   }

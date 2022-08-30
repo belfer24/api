@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { StripeConstants } from 'src/constants/stripe';
+import { StripeConstants } from '@/constants/stripe';
 import { IStripeHelper } from './stripe.interface';
 
 export class StripeHelper {

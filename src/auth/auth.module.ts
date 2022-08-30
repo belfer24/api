@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { UsersModule } from '../users/users.module';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
-import { MicrosoftHelper } from 'src/helpers/microsoft/microsoft';
+import { MicrosoftHelper } from '@/helpers/microsoft/microsoft';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from 'src/users/schemas/user.schema';
-import { StripeHelper } from 'src/helpers/stripe/stripe';
+import { User, UserSchema } from '@/users/schemas/user.schema';
+import { StripeHelper } from '@/helpers/stripe/stripe';
 
 @Module({
   imports: [
