@@ -17,7 +17,7 @@ import { User, UserSchema } from 'src/users/schemas/user.schema';
       { name: Mail.name, schema: MailSchema },
       { name: Contacts.name, schema: ContactsSchema },
       { name: User.name, schema: UserSchema },
-    ])
-  ]
+    ]),
+  ],
 })
 export class MailsModule {}

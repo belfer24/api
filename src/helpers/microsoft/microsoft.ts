@@ -1,126 +1,124 @@
 import Axios, { AxiosInstance } from 'axios';
 import {
-    Configuration,
-    ConfidentialClientApplication,
-    ICachePlugin,
-    ResponseMode,
+  Configuration,
+  ConfidentialClientApplication,
+  ICachePlugin,
+  ResponseMode,
 } from '@azure/msal-node';
 import serverLinks from 'src/constants/serverLinks';
 import { MicrosoftConstants } from 'src/constants/microsoft';
 import { RequestUtils } from 'src/utils/request';
 
-
 export class MicrosoftHelper {
-    private _clientId = process.env.OUTLOOK_CLIENT_ID;
-    private _clientSecret = process.env.OUTLOOK_SECRET_ID;
-    private _cachePlugin: ICachePlugin;
-    private _refreshToken: string;
-    public Graph: AxiosInstance;
+  private _clientId: string = process.env.OUTLOOK_CLIENT_ID;
+  private _clientSecret: string = process.env.OUTLOOK_SECRET_ID;
+  private _cachePlugin: ICachePlugin;
+  private _refreshToken: string;
+  public Graph: AxiosInstance;
 
-    constructor() {
-        this._cachePlugin = {
-            beforeCacheAccess: async cacheContext => {
-                return;
-            },
+  constructor() {
+    this._cachePlugin = {
+      beforeCacheAccess: async (cacheContext) => {
+        return;
+      },
 
-            afterCacheAccess: async cacheContext => {
-                if (cacheContext.cacheHasChanged) {
-                    const data = cacheContext.tokenCache.serialize();
-                    const { RefreshToken } = await JSON.parse(data);
-                    const [{ secret }]:any = Object.values(RefreshToken);
+      afterCacheAccess: async (cacheContext) => {
+        if (cacheContext.cacheHasChanged) {
+          const data = cacheContext.tokenCache.serialize();
+          const { RefreshToken } = await JSON.parse(data);
+          const [{ secret }]: { secret: string }[] =
+            Object.values(RefreshToken);
 
-                    this._refreshToken = secret;
-                }
-            }
+          this._refreshToken = secret;
         }
-    }
+      },
+    };
+  }
 
-    private _CreateOAuthClient() {
-        try {
-            const configuration: Configuration = {
-                auth: {
-                    clientId: this._clientId,
-                    clientSecret: this._clientSecret,
-                },
-                cache: { cachePlugin: this._cachePlugin },
-            }
+  private _CreateOAuthClient() {
+    const configuration: Configuration = {
+      auth: {
+        clientId: this._clientId,
+        clientSecret: this._clientSecret,
+      },
+      cache: { cachePlugin: this._cachePlugin },
+    };
 
-            return new ConfidentialClientApplication(configuration);
-        } catch(error) {
-            throw error;
-        }
-    }
+    return new ConfidentialClientApplication(configuration);
+  }
 
-    public async CreateRedirectUrl({
-        chromeExtensionId,
-    }) {
-        try {
-            const client = this._CreateOAuthClient();
+  public async CreateRedirectUrl({
+    chromeExtensionId,
+  }: {
+    chromeExtensionId: string;
+  }) {
+    const client = this._CreateOAuthClient();
 
-            const url = await client.getAuthCodeUrl({
-                state: chromeExtensionId,
-                prompt: 'select_account',
-                responseMode: ResponseMode.QUERY,
-                scopes: ['openid', 'email', 'profile', 'offline_access', 'User.Read', 'Mail.Send'],
-                redirectUri: serverLinks.outlookRedirectLink,
-            })
+    const url = await client.getAuthCodeUrl({
+      state: chromeExtensionId,
+      prompt: 'select_account',
+      responseMode: ResponseMode.QUERY,
+      scopes: [
+        'openid',
+        'email',
+        'profile',
+        'offline_access',
+        'User.Read',
+        'Mail.Send',
+      ],
+      redirectUri: serverLinks.outlookRedirectLink,
+    });
 
-            return url;
-        } catch (error) {
-            throw error;
-        }
-    }
+    return url;
+  }
 
-    public async GetAuthData({ code }) {
-        try {
-            const client = this._CreateOAuthClient();
-            const data = await client.acquireTokenByCode({
-                code,
-                redirectUri: serverLinks.outlookRedirectLink,
-                scopes: ['openid', 'email', 'profile', 'offline_access', 'User.Read', 'Mail.Send'],
-            })
+  public async GetAuthData({ code }: { code: string }) {
+    const client = this._CreateOAuthClient();
+    const data = await client.acquireTokenByCode({
+      code,
+      redirectUri: serverLinks.outlookRedirectLink,
+      scopes: [
+        'openid',
+        'email',
+        'profile',
+        'offline_access',
+        'User.Read',
+        'Mail.Send',
+      ],
+    });
 
-            if (!data || !data.account || !data.account.username) throw Error("Error!")
+    if (!data || !data.account || !data.account.username) throw Error('Error!');
 
-            return { account: data.account, refreshToken: this._refreshToken }
-        } catch (error) {
-            throw error
-        }
-    }
+    return { account: data.account, refreshToken: this._refreshToken };
+  }
 
-    private async _GetAccessTokenByRefreshToken(refreshToken: string) {
-      try {
-        const { data } = await Axios.post(
-          'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-          RequestUtils.ObjectToQuery({
-            grant_type: 'refresh_token',
-            client_id: this._clientId,
-            client_secret: this._clientSecret,
-            scopes: MicrosoftConstants.Scopes.join(' '),
-            refresh_token: refreshToken,
-          })
-        )
+  private async _GetAccessTokenByRefreshToken(refreshToken: string) {
+    const { data } = await Axios.post(
+      'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+      RequestUtils.ObjectToQuery({
+        grant_type: 'refresh_token',
+        client_id: this._clientId,
+        client_secret: this._clientSecret,
+        scopes: MicrosoftConstants.Scopes.join(' '),
+        refresh_token: refreshToken,
+      }),
+    );
 
-        return data;
-      } catch (error) {
-          throw error;
-      }
-    }
+    return data;
+  }
 
-    public async createGraph(outlookRefreshToken: string) {
-      try {
-        const tokens = await this._GetAccessTokenByRefreshToken(outlookRefreshToken);
+  public async createGraph(outlookRefreshToken: string) {
+    const tokens = await this._GetAccessTokenByRefreshToken(
+      outlookRefreshToken,
+    );
 
-        this.Graph = Axios.create({
-          baseURL: MicrosoftConstants.Url.Graph,
-          headers: {
-            Authorization: `Bearer ${tokens.access_token}`,
-          }
-        })
-        
-        return tokens.access_token;
-      } catch (error) {
-          throw error;
-      }
-    }
+    this.Graph = Axios.create({
+      baseURL: MicrosoftConstants.Url.Graph,
+      headers: {
+        Authorization: `Bearer ${tokens.access_token}`,
+      },
+    });
+
+    return tokens.access_token;
+  }
 }

@@ -13,4 +13,19 @@ export namespace ICloudTasks {
       MailSend = 'mail-send',
     }
   }
+
+  export type Payload = {
+    message: {
+      to: string,
+      subject: string,
+      text: string,
+    },
+    outlookRefreshToken: string,
+    lastMessage: boolean,
+  }
+
+  export type Task = {
+    payload: Payload,
+    delay: number,
+  }
 }

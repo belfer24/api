@@ -25,7 +25,7 @@ export namespace IStripeHelper {
           'email' | 'payment_method' | 'address'
         > {
         email: string;
-        payment_method: string;
+        payment_method?: string;
         address?: Stripe.AddressParam;
       }
 

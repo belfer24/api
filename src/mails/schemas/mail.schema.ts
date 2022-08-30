@@ -1,5 +1,5 @@
-import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Types } from "mongoose";
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
 
 export type MailDocument = Mail & Document;
 
@@ -7,7 +7,7 @@ export type MailDocument = Mail & Document;
 export class Mail {
   @Prop()
   mail: string;
-  
+
   @Prop()
   addedAt: Date;
 
