@@ -29,6 +29,9 @@ class Billing {
   paid: string;
 
   @Prop()
+  dailyLimit: number;
+
+  @Prop()
   stripe: Stripe;
 
   @Prop()

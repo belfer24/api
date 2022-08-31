@@ -153,4 +153,12 @@ export namespace IStripeHelper {
       export type Response = Promise<Stripe.PaymentMethod.Card | undefined>;
     }
   }
+
+  export namespace Event {
+    export type Data = {
+      data: {
+        object: any,
+      }
+    }
+  }
 }

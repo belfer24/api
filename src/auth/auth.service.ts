@@ -33,7 +33,6 @@ export class AuthService {
     const { code, state: chromeExtensionId } = params;
     const { account, refreshToken } =
       await this._MicrosoftHelper.GetAuthData({ code });
-    console.log(account);
     
     const user = await this.userModel
       .exists({ email: account.username })
@@ -48,6 +47,7 @@ export class AuthService {
         refresh_token: refreshToken,
         createdAt: Date.now(),
         billing: {
+          paid: false,
           stripe: {
             customerId: newCustomer.id,
           },

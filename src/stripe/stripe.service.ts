@@ -4,6 +4,7 @@ import { User, UserDocument } from '@/users/schemas/user.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { IStripeWebhook } from './stripe.interface';
+import Stripe from 'stripe';
 
 @Injectable()
 export class StripeService {
@@ -28,29 +29,29 @@ export class StripeService {
     customer: IStripeWebhook.Service.CustomerCreate.Params,
   ) {
     const data = customer.data.object;
-    console.log(customer);
 
     await this._StripeHelper.CustomerCreated(data);
   }
 
+  async setFreePlan(data: IStripeWebhook.Service.SubscriptionUpdated.Params) {
+    await this.updatePremiumStatus(data, false);
+    
+    return this._StripeHelper.SetDefaultSubscritpion(data);
+  }
+
   async updatePremiumStatus(
     body: IStripeWebhook.Service.SubscriptionUpdated.Params,
-    status?: boolean,
+    isPremium?: boolean,
   ) {
-    const customer = body.data.object;
+    const subscriptionData = body.data.object;
+    const dailyLimit = isPremium ? 2000 : 200;
 
-    if (status) {
-      await this.userModel.findOneAndUpdate(
-        { email: customer.customer_email },
-        {
-          billing: {
-            paid: status,
-            stripe: {
-              customerId: customer.customer,
-            },
-          },
-        },
-      );
-    }
+    await this.userModel.findOneAndUpdate(
+      { 'billing.stripe.customerId': subscriptionData.customer },
+      {
+        'billing.paid': isPremium,
+        'billing.dailyLimit': dailyLimit,
+      },
+    );
   }
 }

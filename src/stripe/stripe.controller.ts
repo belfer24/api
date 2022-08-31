@@ -17,23 +17,34 @@ export class StripeController {
 
   @Post('webhook-customer-created')
   async customerCreated(@Body() body: Stripe.Event) {
-    return await this.StripeService.customerCreated(body);
+    return this.StripeService.customerCreated(body)
   }
+
+  @Post('webhook-subscription-deleted')
+  async subscriptionDeleted(@Body() body: Stripe.Event) {
+    console.log("Subs deleted");
+    return this.StripeService.setFreePlan(body);
+  }
+
+  // @Post('webhook-subscription-created')
+  // async subscriptionCreated(@Body() body: Stripe.Event) {
+  //   console.log("Subs created");
+  //   return this.StripeService.updatePremiumStatus(body, true);
+  // }
 
   @Post('webhook-update-subscription')
   async updateSubscription(@Body() body: Stripe.Event) {
-    const customer = body.data.object;
-
-    console.log('Update Subscription: ', body.data.object);
+    console.log("Subs updated");
+    return this.StripeService.updatePremiumStatus(body, true);
   }
 
-  @Post('webhook-payment-success')
-  async successPayment(@Body() body: Stripe.Event) {
-    return await this.StripeService.updatePremiumStatus(body, true);
-  }
+  // @Post('webhook-payment-success')
+  // async successPayment(@Body() body: Stripe.Event) {
+  //   return this.StripeService.updatePremiumStatus(body, true);
+  // }
 
-  @Post('webhook-payment-failed')
-  async failedPayment(@Body() body: Stripe.Event) {
-    return await this.StripeService.updatePremiumStatus(body, false);
-  }
+  // @Post('webhook-payment-failed')
+  // async failedPayment(@Body() body: Stripe.Event) {
+  //   return this.StripeService.updatePremiumStatus(body, false);
+  // }
 }
