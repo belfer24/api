@@ -57,6 +57,9 @@ export class User {
 
   @Prop()
   createdAt: Date;
+  
+  @Prop()
+  sentMessagesToday: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

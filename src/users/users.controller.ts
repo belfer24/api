@@ -8,7 +8,8 @@ export class UsersController {
   @Post('getOne')
   async getUser(@Body() body: {email: string}) {
     const email = body.email;
-
-    return this.usersService.findUser(email);
+    const user = await this.usersService.findUser(email);
+    
+    return user;
   }
 }

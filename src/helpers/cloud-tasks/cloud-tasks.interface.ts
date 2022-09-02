@@ -22,6 +22,7 @@ export namespace ICloudTasks {
     },
     outlookRefreshToken: string,
     lastMessage: boolean,
+    email: string,
   }
 
   export type Task = {

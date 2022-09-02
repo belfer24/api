@@ -44,6 +44,7 @@ export class MailsService {
           message,
           lastMessage,
           outlookRefreshToken,
+          email,
         },
         delay,
       });
@@ -57,6 +58,13 @@ export class MailsService {
   async sendOutlookMessage(body: IMails.Messages.Message) {
     await this._OutlookHelper.connectToGraph(body.outlookRefreshToken || '');
     await this._OutlookHelper.sendMessage(body.message);
+
+    const email = body.email;
+    const increment = 1;
+    await this.userModel.findOneAndUpdate(
+      { email },
+      { $inc: { sentMessagesToday: increment } },
+    );
 
     return {};
   }

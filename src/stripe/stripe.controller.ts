@@ -26,25 +26,15 @@ export class StripeController {
     return this.StripeService.setFreePlan(body);
   }
 
-  // @Post('webhook-subscription-created')
-  // async subscriptionCreated(@Body() body: Stripe.Event) {
-  //   console.log("Subs created");
-  //   return this.StripeService.updatePremiumStatus(body, true);
-  // }
-
   @Post('webhook-update-subscription')
   async updateSubscription(@Body() body: Stripe.Event) {
     console.log("Subs updated");
     return this.StripeService.updatePremiumStatus(body, true);
   }
 
-  // @Post('webhook-payment-success')
-  // async successPayment(@Body() body: Stripe.Event) {
-  //   return this.StripeService.updatePremiumStatus(body, true);
-  // }
-
-  // @Post('webhook-payment-failed')
-  // async failedPayment(@Body() body: Stripe.Event) {
-  //   return this.StripeService.updatePremiumStatus(body, false);
-  // }
+  @Post('webhook-payment-failed')
+  async failedPayment(@Body() body: Stripe.Event) {
+    this.StripeService.setFreePlan(body);
+    return this.StripeService.updatePremiumStatus(body, false);
+  }
 }

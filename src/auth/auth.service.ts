@@ -46,6 +46,7 @@ export class AuthService {
         email: account.username,
         refresh_token: refreshToken,
         createdAt: Date.now(),
+        sentMessagesToday: 0,
         billing: {
           paid: false,
           stripe: {
