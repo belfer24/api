@@ -6,7 +6,7 @@ import { MailsService } from './mails.service';
 export class MailsController {
   constructor(private mailsService: MailsService) {}
 
-  @Post('create-task')
+  @Post('create-tasks')
   async createCloudTask(
     @Body() taskBody: IMails.CloudTasks.Task,
     @Response() res: Response,
@@ -14,6 +14,11 @@ export class MailsController {
     await this.mailsService.mailTasksCreate(taskBody);
 
     return res;
+  }
+
+  @Post('cancel-send')
+  async cancelSend(@Body() body: { email: string }) {
+    return this.mailsService.cancelSend(body.email);
   }
 
   @Post('send-mails')

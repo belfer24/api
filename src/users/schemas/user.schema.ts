@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Contacts } from '@/contacts/schemas/contacts.schema';
-import { Mail } from '@/mails/schemas/mail.schema';
+import { Mails } from '@/mails/schemas/mail.schema';
 
 export type UserDocument = User & Document;
 
@@ -50,7 +50,7 @@ export class User {
   billing: Billing;
 
   @Prop()
-  mails: Mail[];
+  mails: Mails[];
 
   @Prop({ type: [Types.ObjectId], ref: Contacts.name })
   contactsData: Contacts[];

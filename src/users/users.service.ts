@@ -13,4 +13,11 @@ export class UsersService {
   async findUser(email: string): Promise<User | undefined | null> {
     return this.userModel.findOne({ email });
   }
+
+  async resetDailySendLimits() {
+    return this.userModel.updateMany(
+      { sentMessagesToday: { $gt: 0 } },
+      { sentMessagesToday: 0 },
+    );
+  }
 }

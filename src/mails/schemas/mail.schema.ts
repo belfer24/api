@@ -1,18 +1,27 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type MailDocument = Mail & Document;
+export type MailsDocument = Mails & Document;
 
 @Schema()
-export class Mail {
+export class Mails {
   @Prop()
-  mail: string;
+  mails: any[];
 
   @Prop()
-  addedAt: Date;
+  createdAt: Date;
 
   @Prop()
-  userId: string;
+  updatedAt: Date;
+
+  @Prop()
+  email: string;
+
+  @Prop()
+  status: string;
+
+  @Prop()
+  refresh_token: string;
 }
 
-export const MailSchema = SchemaFactory.createForClass(Mail);
+export const MailSchema = SchemaFactory.createForClass(Mails);
