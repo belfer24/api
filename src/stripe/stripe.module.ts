@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { StripeHelper } from 'src/helpers/stripe/stripe';
+import { StripeHelper } from '@/helpers/stripe/stripe';
 import { StripeController } from './stripe.controller';
 import { StripeService } from './stripe.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from 'src/users/schemas/user.schema';
+import { User, UserSchema } from '@/users/schemas/user.schema';
 
 @Module({
   controllers: [StripeController],

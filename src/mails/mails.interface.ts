@@ -17,9 +17,10 @@ export namespace IMails {
 
   export namespace Messages {
     export type Message = {
-      message: MessageBody
+      message: MessageBody;
       lastLetter?: boolean;
       outlookRefreshToken?: string;
+      email: string;
     };
   }
 }

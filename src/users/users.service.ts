@@ -10,7 +10,14 @@ export class UsersService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async findUser(email: string): Promise<User | undefined> {
-    return this.userModel.findOne({ email: email });
+  async findUser(email: string): Promise<User | undefined | null> {
+    return this.userModel.findOne({ email });
+  }
+
+  async resetDailySendLimits() {
+    return this.userModel.updateMany(
+      { sentMessagesToday: { $gt: 0 } },
+      { sentMessagesToday: 0 },
+    );
   }
 }

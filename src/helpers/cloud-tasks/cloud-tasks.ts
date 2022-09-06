@@ -1,8 +1,8 @@
 import { CloudTasksClient } from '@google-cloud/tasks';
-import { ICloudTasks } from 'src/helpers/cloud-tasks/cloud-tasks.interface';
+import { ICloudTasks } from '@/helpers/cloud-tasks/cloud-tasks.interface';
 import { google } from '@google-cloud/tasks/build/protos/protos';
 
-import cloudTasksCreds from 'src/constants/google';
+import cloudTasksCreds from '@/constants/google';
 
 export class CloudTasks {
   async createCloudTask({ payload, delay }: ICloudTasks.Task) {
@@ -21,11 +21,11 @@ export class CloudTasks {
       },
     };
 
-    if (payload) {
-      task.httpRequest.body = Buffer.from(JSON.stringify(payload)).toString(
+    if (task && payload) {
+      task.httpRequest!.body = Buffer.from(JSON.stringify(payload)).toString(
         'base64',
       );
-      task.httpRequest.headers = { 'Content-Type': 'application/json' };
+      task.httpRequest!.headers = { 'Content-Type': 'application/json' };
     }
 
     if (delay) {

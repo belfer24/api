@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { StripeConstants } from 'src/constants/stripe';
+import { StripeConstants } from '@/constants/stripe';
 import { IStripeHelper } from './stripe.interface';
 
 export class StripeHelper {
@@ -33,6 +33,10 @@ export class StripeHelper {
     return exist;
   }
 
+  public async GetCustomer(id: string) {
+    return this._Stripe.customers.retrieve(id);
+  }
+
   public async CreateStripePortal(customer: string) {
     const session = await this._Stripe.billingPortal.sessions.create({
       customer: customer,
@@ -45,6 +49,23 @@ export class StripeHelper {
   public async CustomerCreated(customer: Stripe.Account) {
     const options: Stripe.SubscriptionCreateParams = {
       customer: customer.id,
+      collection_method: 'charge_automatically',
+      items: [{ price: StripeConstants.FreePlan, quantity: 1 }],
+      payment_behavior: 'allow_incomplete',
+      proration_behavior: 'always_invoice',
+    };
+
+    const subscription: Stripe.Subscription =
+      await this._Stripe.subscriptions.create(options);
+
+    return subscription;
+  }
+
+  public async SetDefaultSubscritpion(stripeData: IStripeHelper.Event.Data) {
+    const customer = stripeData.data.object;
+    
+    const options: Stripe.SubscriptionCreateParams = {
+      customer: customer.customer,
       collection_method: 'charge_automatically',
       items: [{ price: StripeConstants.FreePlan, quantity: 1 }],
       payment_behavior: 'allow_incomplete',

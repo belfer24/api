@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { MicrosoftHelper } from 'src/helpers/microsoft/microsoft';
+import { MicrosoftHelper } from '@/helpers/microsoft/microsoft';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument } from 'src/users/schemas/user.schema';
-import { StripeHelper } from 'src/helpers/stripe/stripe';
+import { User, UserDocument } from '@/users/schemas/user.schema';
+import { StripeHelper } from '@/helpers/stripe/stripe';
 import { IAuth } from './auth.inteface';
 
 @Injectable()
@@ -33,7 +33,6 @@ export class AuthService {
     const { code, state: chromeExtensionId } = params;
     const { account, refreshToken } =
       await this._MicrosoftHelper.GetAuthData({ code });
-    console.log(account);
     
     const user = await this.userModel
       .exists({ email: account.username })
@@ -47,7 +46,9 @@ export class AuthService {
         email: account.username,
         refresh_token: refreshToken,
         createdAt: Date.now(),
+        sentMessagesToday: 0,
         billing: {
+          paid: false,
           stripe: {
             customerId: newCustomer.id,
           },

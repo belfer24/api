@@ -5,13 +5,13 @@ import {
   ICachePlugin,
   ResponseMode,
 } from '@azure/msal-node';
-import serverLinks from 'src/constants/serverLinks';
-import { MicrosoftConstants } from 'src/constants/microsoft';
-import { RequestUtils } from 'src/utils/request';
+import serverLinks from '@/constants/serverLinks';
+import { MicrosoftConstants } from '@/constants/microsoft';
+import { RequestUtils } from '@/utils/request';
 
 export class MicrosoftHelper {
-  private _clientId: string = process.env.OUTLOOK_CLIENT_ID;
-  private _clientSecret: string = process.env.OUTLOOK_SECRET_ID;
+  private _clientId: string = process.env.OUTLOOK_CLIENT_ID || '';
+  private _clientSecret: string = process.env.OUTLOOK_SECRET_ID || '';
   private _cachePlugin: ICachePlugin;
   private _refreshToken: string;
   public Graph: AxiosInstance;
