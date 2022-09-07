@@ -25,7 +25,7 @@ export namespace IStripeHelper {
           'email' | 'payment_method' | 'address'
         > {
         email: string;
-        payment_method: string;
+        payment_method?: string;
         address?: Stripe.AddressParam;
       }
 
@@ -151,6 +151,14 @@ export namespace IStripeHelper {
       };
 
       export type Response = Promise<Stripe.PaymentMethod.Card | undefined>;
+    }
+  }
+
+  export namespace Event {
+    export type Data = {
+      data: {
+        object: any,
+      }
     }
   }
 }

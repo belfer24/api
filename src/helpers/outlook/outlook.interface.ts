@@ -11,7 +11,6 @@ export namespace IOutlookHelper {
     export namespace Send {
       export type Request = {
         text: string;
-        from: string;
         to: string;
         subject: string;
       };

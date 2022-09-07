@@ -1,65 +1,96 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Contacts, ContactsDocument } from 'src/contacts/schemas/contacts.schema';
-import { CloudTasks } from 'src/helpers/cloud-tasks/cloud-tasks';
-import { ICloudTasks } from 'src/helpers/cloud-tasks/cloud-tasks.interface';
+import {
+  Contacts,
+  ContactsDocument,
+} from '@/contacts/schemas/contacts.schema';
+import { CloudTasks } from '@/helpers/cloud-tasks/cloud-tasks';
 
-import { OutlookHelper } from 'src/helpers/outlook/outlook';
-import { User, UserDocument } from 'src/users/schemas/user.schema';
+import { OutlookHelper } from '@/helpers/outlook/outlook';
+import { User, UserDocument } from '@/users/schemas/user.schema';
+import { IMails } from './mails.interface';
+import { Mails, MailsDocument } from './schemas/mail.schema';
 
 @Injectable()
 export class MailsService {
   constructor(
-    @InjectModel(Contacts.name) private readonly contactsModel: Model<ContactsDocument>,
+    @InjectModel(Contacts.name)
+    private readonly contactsModel: Model<ContactsDocument>,
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(Mails.name) private readonly mailsModel: Model<MailsDocument>,
     private readonly _CloudTasks: CloudTasks,
     private readonly _OutlookHelper: OutlookHelper,
   ) {}
 
-  async mailTasksCreate(params) {
-    try {
-      const { outlookMessages, outlookRefreshToken, csvData, email } = params;
+  async mailTasksCreate(params: IMails.CloudTasks.Task) {
+    const { outlookMessages, outlookRefreshToken, csvData, email } = params;
+    const user = await this.userModel.findOne({ email }).exec();
 
-      const userFromEmail = await this.userModel.findOne({ email }).exec();
+    await this.contactsModel.create({
+      data: csvData,
+      createdAt: Date.now(),
+      userId: user?._id,
+    });
 
-      this.contactsModel.create({
-        data: csvData,
-        createdAt: Date.now(),
-        userId: userFromEmail._id
-      })
+    await this.mailsModel.create({
+      mails: outlookMessages,
+      createdAt: Date.now(),
+      email,
+      status: 'In progress',
+      refresh_token: outlookRefreshToken,
+    });
 
-      const sent = outlookMessages.length;
-      const delayInSeconds = 3;
+    let intervalId: NodeJS.Timer;
+    const delay = 10000;
 
-      const mailPromises = outlookMessages.map((letter, index) => {
-        const delay = index * delayInSeconds;
-        const lastLetter = outlookMessages.length - 1 === index;
+    intervalId = setInterval(async () => {
+      const sendData = await this.mailsModel.findOne({ email }).exec();
+      const lastMessage = sendData?.mails.length === 0;
 
-        return this._CloudTasks.createCloudTask({
+      if (lastMessage || sendData?.status === 'Stop') {
+        clearInterval(intervalId);
+        console.log(sendData.status);
+        await this.mailsModel.deleteOne({ email });
+      } else {
+        await this._CloudTasks.createCloudTask({
           payload: {
-              letter,
-              lastLetter,
-              outlookRefreshToken,
+            message: sendData?.mails[0],
+            lastMessage,
+            outlookRefreshToken,
+            email,
           },
-          delay,
-        })
-      })
+          delay: 0,
+        });
 
-      await Promise.all(mailPromises);
+        await this.mailsModel.updateOne(
+          { email },
+          {
+            $pop: { mails: 1 },
+          },
+        );
+      }
+    }, delay);
 
-      return { success: true }
-    } catch (error) {
-      throw error
-    }
+    return { success: true };
   }
 
-  async sendOutlookMails(body) {
-    await this._OutlookHelper.Connect(body.outlookRefreshToken);
+  async cancelSend(email: string) {
+    await this.mailsModel.updateOne({ email }, { status: 'Stop' });
+  }
 
-    // await this._OutlookHelper.Send(body.letter);
-    console.log("Send done!");
+  async sendOutlookMessage(body: IMails.Messages.Message) {
+    // await this._OutlookHelper.connectToGraph(body.outlookRefreshToken || '');
+    // await this._OutlookHelper.sendMessage(body.message);
 
-    return {}
+    const email = body.email;
+    const increment = 1;
+    await this.userModel.findOneAndUpdate(
+      { email },
+      { $inc: { sentMessagesToday: increment } },
+    );
+    console.log('Sent!');
+
+    return {};
   }
 }
