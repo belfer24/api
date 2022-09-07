@@ -1,4 +1,4 @@
-const apiLink = 'https://86e6-46-219-218-121.eu.ngrok.io';
+const apiLink = 'https://charge-api-oydrvkbt6q-uc.a.run.app';
 
 const serverLinks = {
   outlookRedirectLink: `${apiLink}/auth/redirect`,
