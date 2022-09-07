@@ -52,6 +52,7 @@ export class AuthService {
           stripe: {
             customerId: newCustomer.id,
           },
+          dailyLimit: 200,
         },
       });
     }
