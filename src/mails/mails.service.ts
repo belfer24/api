@@ -4,11 +4,11 @@ import { Model } from 'mongoose';
 import {
   Contacts,
   ContactsDocument,
-} from '@/contacts/schemas/contacts.schema';
-import { CloudTasks } from '@/helpers/cloud-tasks/cloud-tasks';
+} from '../contacts/schemas/contacts.schema';
+import { CloudTasks } from '../helpers/cloud-tasks/cloud-tasks';
 
-import { OutlookHelper } from '@/helpers/outlook/outlook';
-import { User, UserDocument } from '@/users/schemas/user.schema';
+import { OutlookHelper } from '../helpers/outlook/outlook';
+import { User, UserDocument } from '../users/schemas/user.schema';
 import { IMails } from './mails.interface';
 import { Mails, MailsDocument } from './schemas/mail.schema';
 
