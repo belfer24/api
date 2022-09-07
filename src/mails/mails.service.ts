@@ -4,11 +4,11 @@ import { Model } from 'mongoose';
 import {
   Contacts,
   ContactsDocument,
-} from '../contacts/schemas/contacts.schema';
-import { CloudTasks } from '../helpers/cloud-tasks/cloud-tasks';
+} from '@/contacts/schemas/contacts.schema';
+import { CloudTasks } from '@/helpers/cloud-tasks/cloud-tasks';
 
-import { OutlookHelper } from '../helpers/outlook/outlook';
-import { User, UserDocument } from '../users/schemas/user.schema';
+import { OutlookHelper } from '@/helpers/outlook/outlook';
+import { User, UserDocument } from '@/users/schemas/user.schema';
 import { IMails } from './mails.interface';
 import { Mails, MailsDocument } from './schemas/mail.schema';
 
@@ -80,8 +80,8 @@ export class MailsService {
   }
 
   async sendOutlookMessage(body: IMails.Messages.Message) {
-    // await this._OutlookHelper.connectToGraph(body.outlookRefreshToken || '');
-    // await this._OutlookHelper.sendMessage(body.message);
+    await this._OutlookHelper.connectToGraph(body.outlookRefreshToken || '');
+    await this._OutlookHelper.sendMessage(body.message);
 
     const email = body.email;
     const increment = 1;
