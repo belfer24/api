@@ -11,7 +11,9 @@ export class MailsController {
     @Body() taskBody: IMails.CloudTasks.Task,
     @Response() res: Response,
   ) {
-    await this.mailsService.mailTasksCreate(taskBody);
+    console.log(taskBody);
+    
+    const status = await this.mailsService.mailTasksCreate(taskBody);
 
     return res;
   }
@@ -26,7 +28,7 @@ export class MailsController {
     @Body() message: IMails.Messages.Message,
     @Response() res: Response,
   ) {
-    await this.mailsService.sendOutlookMessage(message);
+    // await this.mailsService.sendOutlookMessage(message);
 
     return res.json();
   }

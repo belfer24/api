@@ -33,6 +33,15 @@ export class MailsService {
       userId: user?._id,
     });
 
+    if (user && outlookMessages.length > user?.billing.dailyLimit - user.sentMessagesToday) {
+      console.log("Limit!!");
+      
+      return { error: {
+        title: "Sending limit is exceeded",
+        text: "You’ve reached your daily sending limit"
+      }}
+    }
+
     await this.mailsModel.create({
       mails: outlookMessages,
       createdAt: Date.now(),
@@ -50,7 +59,6 @@ export class MailsService {
 
       if (lastMessage || sendData?.status === 'Stop') {
         clearInterval(intervalId);
-        console.log(sendData.status);
         await this.mailsModel.deleteOne({ email });
       } else {
         await this._CloudTasks.createCloudTask({
