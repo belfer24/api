@@ -11,11 +11,7 @@ export class MailsController {
     @Body() taskBody: IMails.CloudTasks.Task,
     @Response() res: Response,
   ) {
-    console.log(taskBody);
-    
-    const status = await this.mailsService.mailTasksCreate(taskBody);
-
-    return res;
+    return this.mailsService.mailTasksCreate(taskBody);
   }
 
   @Post('cancel-send')
@@ -28,7 +24,7 @@ export class MailsController {
     @Body() message: IMails.Messages.Message,
     @Response() res: Response,
   ) {
-    // await this.mailsService.sendOutlookMessage(message);
+    await this.mailsService.sendOutlookMessage(message);
 
     return res.json();
   }

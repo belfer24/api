@@ -4,7 +4,7 @@ import { User, UserDocument } from '@/users/schemas/user.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { IStripeWebhook } from './stripe.interface';
-import Stripe from 'stripe';
+import { StripeConstants } from '@/constants/stripe';
 
 @Injectable()
 export class StripeService {
@@ -44,14 +44,18 @@ export class StripeService {
     isPremium?: boolean,
   ) {
     const subscriptionData = body.data.object;
+    const premiumPlanId = StripeConstants.PremiumPlan;
+    const userPlanId = subscriptionData.items.data.plan.id;
     const dailyLimit = isPremium ? 2000 : 200;
 
-    await this.userModel.findOneAndUpdate(
-      { 'billing.stripe.customerId': subscriptionData.customer },
-      {
-        'billing.paid': isPremium,
-        'billing.dailyLimit': dailyLimit,
-      },
-    );
+    if (userPlanId === premiumPlanId) {
+      await this.userModel.findOneAndUpdate(
+        { 'billing.stripe.customerId': subscriptionData.customer },
+        {
+          'billing.paid': isPremium,
+          'billing.dailyLimit': dailyLimit,
+        },
+      );
+    }
   }
 }

@@ -35,11 +35,11 @@ export class MailsService {
 
     if (user && outlookMessages.length > user?.billing.dailyLimit - user.sentMessagesToday) {
       console.log("Limit!!");
-      
+    
       return { error: {
         title: "Sending limit is exceeded",
         text: "You’ve reached your daily sending limit"
-      }}
+      }};
     }
 
     await this.mailsModel.create({
@@ -49,6 +49,8 @@ export class MailsService {
       status: 'In progress',
       refresh_token: outlookRefreshToken,
     });
+
+    await this.userModel.findOneAndUpdate({ email }, { isSending: true });
 
     let intervalId: NodeJS.Timer;
     const delay = 10000;
@@ -60,6 +62,7 @@ export class MailsService {
       if (lastMessage || sendData?.status === 'Stop') {
         clearInterval(intervalId);
         await this.mailsModel.deleteOne({ email });
+        await this.userModel.findOneAndUpdate({ email }, { isSending: false });
       } else {
         await this._CloudTasks.createCloudTask({
           payload: {
@@ -88,8 +91,8 @@ export class MailsService {
   }
 
   async sendOutlookMessage(body: IMails.Messages.Message) {
-    await this._OutlookHelper.connectToGraph(body.outlookRefreshToken || '');
-    await this._OutlookHelper.sendMessage(body.message);
+    // await this._OutlookHelper.connectToGraph(body.outlookRefreshToken || '');
+    // await this._OutlookHelper.sendMessage(body.message);
 
     const email = body.email;
     const increment = 1;
@@ -97,7 +100,6 @@ export class MailsService {
       { email },
       { $inc: { sentMessagesToday: increment } },
     );
-    console.log('Sent!');
 
     return {};
   }
