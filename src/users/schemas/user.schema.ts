@@ -60,6 +60,9 @@ export class User {
   
   @Prop()
   sentMessagesToday: number;
+
+  @Prop()
+  isSending: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

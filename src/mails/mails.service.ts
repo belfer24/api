@@ -41,6 +41,8 @@ export class MailsService {
       refresh_token: outlookRefreshToken,
     });
 
+    await this.userModel.findOneAndUpdate({ email }, { isSending: true });
+
     let intervalId: NodeJS.Timer;
     const delay = 10000;
 
@@ -50,8 +52,8 @@ export class MailsService {
 
       if (lastMessage || sendData?.status === 'Stop') {
         clearInterval(intervalId);
-        console.log(sendData.status);
         await this.mailsModel.deleteOne({ email });
+        await this.userModel.findOneAndUpdate({ email }, { isSending: false });
       } else {
         await this._CloudTasks.createCloudTask({
           payload: {
@@ -89,7 +91,6 @@ export class MailsService {
       { email },
       { $inc: { sentMessagesToday: increment } },
     );
-    console.log('Sent!');
 
     return {};
   }

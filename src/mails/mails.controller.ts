@@ -9,11 +9,8 @@ export class MailsController {
   @Post('create-tasks')
   async createCloudTask(
     @Body() taskBody: IMails.CloudTasks.Task,
-    @Response() res: Response,
   ) {
-    await this.mailsService.mailTasksCreate(taskBody);
-
-    return res;
+    return this.mailsService.mailTasksCreate(taskBody);
   }
 
   @Post('cancel-send')
