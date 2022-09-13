@@ -9,7 +9,6 @@ export class MailsController {
   @Post('create-tasks')
   async createCloudTask(
     @Body() taskBody: IMails.CloudTasks.Task,
-    @Response() res: Response,
   ) {
     return this.mailsService.mailTasksCreate(taskBody);
   }
