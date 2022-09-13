@@ -82,8 +82,8 @@ export class MailsService {
   }
 
   async sendOutlookMessage(body: IMails.Messages.Message) {
-    // await this._OutlookHelper.connectToGraph(body.outlookRefreshToken || '');
-    // await this._OutlookHelper.sendMessage(body.message);
+    await this._OutlookHelper.connectToGraph(body.outlookRefreshToken || '');
+    await this._OutlookHelper.sendMessage(body.message);
 
     const email = body.email;
     const increment = 1;
