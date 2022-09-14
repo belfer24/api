@@ -1,16 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import {
-  Contacts,
-  ContactsDocument,
-} from '@/contacts/schemas/contacts.schema';
+import { Contacts, ContactsDocument } from '@/contacts/schemas/contacts.schema';
 import { CloudTasks } from '@/helpers/cloud-tasks/cloud-tasks';
 
 import { OutlookHelper } from '@/helpers/outlook/outlook';
 import { User, UserDocument } from '@/users/schemas/user.schema';
 import { IMails } from './mails.interface';
 import { Mails, MailsDocument } from './schemas/mail.schema';
+import { CancelSendDto } from './dto/mail.dto';
 
 @Injectable()
 export class MailsService {
@@ -49,41 +47,49 @@ export class MailsService {
     intervalId = setInterval(async () => {
       const sendData = await this.mailsModel.findOne({ email }).exec();
       const lastMessage = sendData?.mails.length === 0;
+      if (sendData) {
+        if (lastMessage || sendData?.status === 'Stop') {
+          clearInterval(intervalId);
+          await this.mailsModel.deleteOne({ email });
+          await this.userModel.findOneAndUpdate(
+            { email },
+            { isSending: false },
+          );
+        } else {
+          await this._CloudTasks.createCloudTask({
+            payload: {
+              message: sendData?.mails[0],
+              lastMessage,
+              outlookRefreshToken,
+              email,
+            },
+            delay: 0,
+          });
 
-      if (lastMessage || sendData?.status === 'Stop') {
-        clearInterval(intervalId);
-        await this.mailsModel.deleteOne({ email });
-        await this.userModel.findOneAndUpdate({ email }, { isSending: false });
+          await this.mailsModel.updateOne(
+            { email },
+            {
+              $pop: { mails: 1 },
+            },
+          );
+        }
       } else {
-        await this._CloudTasks.createCloudTask({
-          payload: {
-            message: sendData?.mails[0],
-            lastMessage,
-            outlookRefreshToken,
-            email,
-          },
-          delay: 0,
-        });
-
-        await this.mailsModel.updateOne(
-          { email },
-          {
-            $pop: { mails: 1 },
-          },
-        );
+        throw Error('User not found!');
       }
     }, delay);
 
     return { success: true };
   }
 
-  async cancelSend(email: string) {
+  async cancelSend({ email }: CancelSendDto) {
     await this.mailsModel.updateOne({ email }, { status: 'Stop' });
   }
 
   async sendOutlookMessage(body: IMails.Messages.Message) {
-    await this._OutlookHelper.connectToGraph(body.outlookRefreshToken || '');
-    await this._OutlookHelper.sendMessage(body.message);
+    if (body.outlookRefreshToken) {
+      await this._OutlookHelper.connectToGraph(body.outlookRefreshToken);
+      await this._OutlookHelper.sendMessage(body.message);
+    }
 
     const email = body.email;
     const increment = 1;

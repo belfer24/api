@@ -1,4 +1,5 @@
 import { Body, Controller, Post, Response } from '@nestjs/common';
+import { CancelSendDto } from './dto/mail.dto';
 import { IMails } from './mails.interface';
 import { MailsService } from './mails.service';
 
@@ -14,8 +15,8 @@ export class MailsController {
   }
 
   @Post('cancel-send')
-  async cancelSend(@Body() body: { email: string }) {
-    return this.mailsService.cancelSend(body.email);
+  async cancelSend(@Body() cancelSendDto: CancelSendDto) {
+    return this.mailsService.cancelSend(cancelSendDto);
   }
 
   @Post('send-mails')

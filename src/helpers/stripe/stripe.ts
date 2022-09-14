@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import { StripeConstants } from '@/constants/stripe';
 import { IStripeHelper } from './stripe.interface';
+import { IStripeWebhook } from '@/stripe/stripe.interface';
 
 export class StripeHelper {
   private _Stripe: Stripe;
@@ -46,7 +47,7 @@ export class StripeHelper {
     return session.url;
   }
 
-  public async CustomerCreated(customer: Stripe.Account) {
+  public async HandleWebhookCustomerCreated(customer: Stripe.Charge) {
     const options: Stripe.SubscriptionCreateParams = {
       customer: customer.id,
       collection_method: 'charge_automatically',
@@ -61,11 +62,11 @@ export class StripeHelper {
     return subscription;
   }
 
-  public async SetDefaultSubscritpion(stripeData: IStripeHelper.Event.Data) {
-    const customer = stripeData.data.object;
-    
+  public async SetDefaultSubscritpion(stripeData: IStripeWebhook.Event) {
+    const customerInfo = stripeData.data.object as Stripe.Charge;
+
     const options: Stripe.SubscriptionCreateParams = {
-      customer: customer.customer,
+      customer: customerInfo.customer as string,
       collection_method: 'charge_automatically',
       items: [{ price: StripeConstants.FreePlan, quantity: 1 }],
       payment_behavior: 'allow_incomplete',

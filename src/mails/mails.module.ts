@@ -4,7 +4,7 @@ import { MailsController } from './mails.controller';
 import { MicrosoftHelper } from '@/helpers/microsoft/microsoft';
 import { OutlookHelper } from '@/helpers/outlook/outlook';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Mails, MailSchema } from './schemas/mail.schema';
+import { Mails, MailsSchema } from './schemas/mail.schema';
 import { CloudTasks } from '@/helpers/cloud-tasks/cloud-tasks';
 import { Contacts, ContactsSchema } from '@/contacts/schemas/contacts.schema';
 import { User, UserSchema } from '@/users/schemas/user.schema';
@@ -14,7 +14,7 @@ import { User, UserSchema } from '@/users/schemas/user.schema';
   controllers: [MailsController],
   imports: [
     MongooseModule.forFeature([
-      { name: Mails.name, schema: MailSchema },
+      { name: Mails.name, schema: MailsSchema },
       { name: Contacts.name, schema: ContactsSchema },
       { name: User.name, schema: UserSchema },
     ]),

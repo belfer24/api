@@ -11,7 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { StripeModule } from './stripe/stripe.module';
 import { SelectorsModule } from './selectors/selectors.module';
 
-const uri = process.env.MONGODB_URI || '';
+const uri = process.env.MONGODB_URI as string;
 
 @Module({
   imports: [

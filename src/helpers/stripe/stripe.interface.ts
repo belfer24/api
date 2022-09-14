@@ -157,7 +157,10 @@ export namespace IStripeHelper {
   export namespace Event {
     export type Data = {
       data: {
-        object: any,
+        object: {
+          id: string,
+          customer: string
+        },
       }
     }
   }
