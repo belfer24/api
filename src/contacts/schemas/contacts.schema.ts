@@ -9,8 +9,8 @@ export class Contacts {
   @Prop()
   createdAt: Date;
 
-  @Prop({type: mongoose.Schema.Types.Mixed})
-  data: any;
+  @Prop()
+  data: Record<string, unknown>[];
 
   @Prop()
   userId: string;

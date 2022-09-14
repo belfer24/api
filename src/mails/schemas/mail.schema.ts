@@ -3,10 +3,23 @@ import { Document } from 'mongoose';
 
 export type MailsDocument = Mails & Document;
 
+class Mail {
+  @Prop()
+  to: string;
+
+  @Prop()
+  text: string;
+
+  @Prop()
+  subject: string;
+}
+
+const MailSchema = SchemaFactory.createForClass(Mail);
+
 @Schema()
 export class Mails {
-  @Prop()
-  mails: any[];
+  @Prop({ type: [MailSchema]})
+  mails: Mail[];
 
   @Prop()
   createdAt: Date;
@@ -24,4 +37,4 @@ export class Mails {
   refresh_token: string;
 }
 
-export const MailSchema = SchemaFactory.createForClass(Mails);
+export const MailsSchema = SchemaFactory.createForClass(Mails);

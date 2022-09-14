@@ -19,7 +19,7 @@ export namespace IMails {
     export type Message = {
       message: MessageBody;
       lastLetter?: boolean;
-      outlookRefreshToken?: string;
+      outlookRefreshToken: string;
       email: string;
     };
   }

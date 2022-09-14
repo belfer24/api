@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { IStripeWebhook } from './stripe.interface';
 import { StripeConstants } from '@/constants/stripe';
+import Stripe from 'stripe';
 
 @Injectable()
 export class StripeService {
@@ -13,8 +14,8 @@ export class StripeService {
     private readonly _StripeHelper: StripeHelper,
   ) {}
 
-  async createStripeProtal(customer: { email: string }) {
-    const user = await this.userModel.findOne({ email: customer.email }).exec();
+  async createStripeProtal(email: string) {
+    const user = await this.userModel.findOne({ email }).exec();
 
     if (user) {
       const portalLink = await this._StripeHelper.CreateStripePortal(
@@ -22,38 +23,43 @@ export class StripeService {
       );
 
       return portalLink;
+    } else {
+      throw Error('User not found!');
     }
   }
 
-  async customerCreated(
-    customer: IStripeWebhook.Service.CustomerCreate.Params,
-  ) {
-    const data = customer.data.object;
+  async HandleWebhookCustomerCreated(event: IStripeWebhook.Event) {
+    const customerInfo = event.data.object as Stripe.Charge;
 
-    await this._StripeHelper.CustomerCreated(data);
+    await this._StripeHelper.HandleWebhookCustomerCreated(customerInfo);
   }
 
-  async setFreePlan(data: IStripeWebhook.Service.SubscriptionUpdated.Params) {
-    await this.updatePremiumStatus(data, false);
-    
-    return this._StripeHelper.SetDefaultSubscritpion(data);
+  async setFreePlan(event: IStripeWebhook.Event) {
+    await this.updatePremiumStatus(event, false);
+
+    return this._StripeHelper.SetDefaultSubscritpion(event);
   }
 
-  async updatePremiumStatus(
-    body: IStripeWebhook.Service.SubscriptionUpdated.Params,
-    isPremium?: boolean,
-  ) {
-    const subscriptionData = body.data.object;
-    const premiumPlanId = StripeConstants.PremiumPlan;
+  async updatePremiumStatus(event: IStripeWebhook.Event, isPremium: boolean) {
+    const subscriptionData = event.data.object as Stripe.Charge;
+    //@ts-ignore
     const userPlanId = subscriptionData.items.data.plan.id;
     const dailyLimit = isPremium ? 2000 : 200;
 
-    if (userPlanId === premiumPlanId) {
+    if (userPlanId === StripeConstants.PremiumPlan) {
       await this.userModel.findOneAndUpdate(
-        { 'billing.stripe.customerId': subscriptionData.customer },
         {
-          'billing.paid': isPremium,
-          'billing.dailyLimit': dailyLimit,
+          billing: {
+            stripe: {
+              customerId: subscriptionData.customer,
+            },
+          },
+        },
+        {
+          billing: {
+            paid: isPremium,
+            dailyLimit,
+          },
         },
       );
     }

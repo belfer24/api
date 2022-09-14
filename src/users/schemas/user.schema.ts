@@ -1,7 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { Contacts } from '../../contacts/schemas/contacts.schema';
-import { Mails } from '../../mails/schemas/mail.schema';
 
 export type UserDocument = User & Document;
 
@@ -16,6 +14,8 @@ class Invoices {
   link: string;
 }
 
+const InvoicesSchema = SchemaFactory.createForClass(Invoices);
+
 class Stripe {
   @Prop()
   customerId: string;
@@ -24,6 +24,8 @@ class Stripe {
   link: string;
 }
 
+const StripeSchema = SchemaFactory.createForClass(Stripe);
+
 class Billing {
   @Prop()
   paid: string;
@@ -31,12 +33,14 @@ class Billing {
   @Prop()
   dailyLimit: number;
 
-  @Prop()
+  @Prop({ type: StripeSchema })
   stripe: Stripe;
 
-  @Prop()
+  @Prop({ type: [InvoicesSchema] })
   invoices: Invoices[];
 }
+
+const BillingSchema = SchemaFactory.createForClass(Billing);
 
 @Schema()
 export class User {
@@ -46,14 +50,8 @@ export class User {
   @Prop()
   refresh_token: string;
 
-  @Prop()
+  @Prop({ type: BillingSchema })
   billing: Billing;
-
-  @Prop()
-  mails: Mails[];
-
-  @Prop({ type: [Types.ObjectId], ref: Contacts.name })
-  contactsData: Contacts[];
 
   @Prop()
   createdAt: Date;
