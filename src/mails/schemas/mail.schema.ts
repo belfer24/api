@@ -3,6 +3,7 @@ import { Document } from 'mongoose';
 
 export type MailsDocument = Mails & Document;
 
+@Schema({ _id: false })
 class Mail {
   @Prop()
   to: string;
