@@ -14,10 +14,12 @@ export class UsersService {
     return this.userModel.findOne({ email });
   }
 
-  async resetDailySendLimits() {
-    return this.userModel.updateMany(
-      { sentMessagesToday: { $gt: 0 } },
-      { sentMessagesToday: 0 },
-    );
+  async resetDailySendLimits(resetSecret: string) {
+    if (resetSecret === process.env.RESET_LIMITS_SECRET) {
+      return this.userModel.updateMany(
+        { sentMessagesToday: { $gt: 0 } },
+        { sentMessagesToday: 0 },
+      );
+    }
   }
 }

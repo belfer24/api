@@ -15,14 +15,8 @@ export class AuthService {
     private readonly _StripeHelper: StripeHelper,
   ) {}
 
-  async GetOutlookRedirectUrl({
-    chromeExtensionId,
-  }: {
-    chromeExtensionId: string;
-  }) {
-    const redirectUrl = await this._MicrosoftHelper.CreateRedirectUrl({
-      chromeExtensionId,
-    });
+  async GetOutlookRedirectUrl() {
+    const redirectUrl = await this._MicrosoftHelper.CreateRedirectUrl();
 
     return { redirectUrl };
   }
@@ -30,7 +24,7 @@ export class AuthService {
   async HandleOutlookOAuth(
     params: IAuth.Service.OutlookRedirectHandler.Params,
   ) {
-    const { code, state: chromeExtensionId } = params;
+    const { code } = params;
     const { account, refreshToken } = await this._MicrosoftHelper.GetAuthData({
       code,
     });
@@ -38,14 +32,13 @@ export class AuthService {
     const user = await this.userModel
       .exists({ email: account.username })
       .exec();
+
     if (!user) {
       const newCustomer = await this._StripeHelper.CreateCustomer({
         email: account.username,
       });
-      console.log(newCustomer);
-      
 
-      this.userModel.create({
+      await this.userModel.create({
         email: account.username,
         refresh_token: refreshToken,
         createdAt: Date.now(),
@@ -60,7 +53,7 @@ export class AuthService {
       });
     }
 
-    const redirectUrl = `chrome-extension://${chromeExtensionId}/oauth/oauth.html?email=${account.username}&token=${refreshToken}&name=${account.name}`;
+    const redirectUrl = `chrome-extension://${process.env.CHROME_EXTENSION_ID}/oauth/oauth.html?email=${account.username}&token=${refreshToken}&name=${account.name}`;
 
     return { redirectUrl };
   }

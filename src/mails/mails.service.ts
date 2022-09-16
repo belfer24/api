@@ -90,7 +90,7 @@ export class MailsService {
       await this._OutlookHelper.connectToGraph(body.outlookRefreshToken);
       await this._OutlookHelper.sendMessage(body.message);
     } else {
-      throw Error('ResheshToken is undefined');
+      throw Error('RefreshToken is undefined');
     }
 
     const email = body.email;

@@ -1,4 +1,4 @@
-const apiLink = 'https://charge-api-oydrvkbt6q-uc.a.run.app';
+const apiLink = process.env.API_LINK;
 
 const serverLinks = {
   outlookRedirectLink: `${apiLink}/auth/redirect`,
