@@ -3,6 +3,7 @@ import { Document, Types } from 'mongoose';
 
 export type UserDocument = User & Document;
 
+@Schema({ _id: false })
 class Invoices {
   @Prop()
   date: string;
@@ -16,6 +17,7 @@ class Invoices {
 
 const InvoicesSchema = SchemaFactory.createForClass(Invoices);
 
+@Schema({ _id: false })
 class Stripe {
   @Prop()
   customerId: string;
@@ -26,9 +28,10 @@ class Stripe {
 
 const StripeSchema = SchemaFactory.createForClass(Stripe);
 
+@Schema({ _id: false })
 class Billing {
   @Prop()
-  paid: string;
+  paid: boolean;
 
   @Prop()
   dailyLimit: number;
@@ -55,7 +58,7 @@ export class User {
 
   @Prop()
   createdAt: Date;
-  
+
   @Prop()
   sentMessagesToday: number;
 
