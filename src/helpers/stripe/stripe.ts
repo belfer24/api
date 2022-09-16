@@ -12,30 +12,16 @@ export class StripeHelper {
   }
 
   public async CreateCustomer(params: IStripeHelper.Customer.Create.Request) {
-    const isCustomerExists = await this.CheckCustomerExist({ email: params.email });
+    const data: Stripe.CustomerCreateParams = {
+      ...params,
+      invoice_settings: {
+        default_payment_method: params.payment_method,
+      },
+    };
 
-    if (!isCustomerExists) {
-      const data: Stripe.CustomerCreateParams = {
-        ...params,
-        invoice_settings: {
-          default_payment_method: params.payment_method,
-        },
-      };
-  
-      const newCustomer = await this._Stripe.customers.create(data);
-  
-      return newCustomer;
-    } else {
-      throw Error('Customer exists!');
-    }
-    
-  }
+    const newCustomer = await this._Stripe.customers.create(data);
 
-  public async CheckCustomerExist({ email }: { email: string }) {
-    const list = await this._Stripe.customers.list({ email });
-    const exist = !!list.data.length;
-
-    return exist;
+    return newCustomer;
   }
 
   public async GetCustomer(id: string) {

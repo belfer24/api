@@ -26,6 +26,13 @@ export class StripeController {
     }
   }
 
+  @Post('webhook/customer-created')
+  async HandleWebhookCustomerCreated(
+    @Body() body: IStripeWebhook.Event<Stripe.Customer>,
+  ) {
+    return this.StripeService.HandleWebhookCustomerCreated(body);
+  }
+
   @Post('webhook/subscription-deleted')
   async HandleWebhookSubscriptionDeleted(
     @Body() body: IStripeWebhook.Event<Stripe.Subscription>,

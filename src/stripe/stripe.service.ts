@@ -28,8 +28,14 @@ export class StripeService {
     }
   }
 
+  async HandleWebhookCustomerCreated(event: IStripeWebhook.Event<Stripe.Customer>) {
+    return this._StripeHelper.setFreePlan(event.data.object.id)
+  }
+
   async HandleWebhookSubscriptionDeleted(event: IStripeWebhook.Event<Stripe.Subscription>) {
-    const customerId = event.data.object.customer;
+    const suvscription = event.data.object;
+
+    const customerId = suvscription.customer;
     const customer = await this._StripeHelper.GetCustomer(customerId as string);
     const customerEmail = customer?.email;
 
@@ -38,9 +44,11 @@ export class StripeService {
   }
 
   async HandleWebhookInvoiceSucceeded(event: IStripeWebhook.Event<Stripe.Invoice>) {
-    const customerId = event.data.object.customer;
-    const customerEmail = event.data.object.customer_email;
-    const customerPlan = event.data.object.lines.data[0].plan?.id;
+    const invoice = event.data.object;
+
+    const customerId = invoice.customer;
+    const customerEmail = invoice.customer_email;
+    const customerPlan = invoice.lines.data[0].plan?.id;
 
     if (customerPlan === StripeConstants.PremiumPlan) {
       await this._setNewLimits(true, customerId as string, customerEmail as string)
@@ -48,8 +56,10 @@ export class StripeService {
   }
 
   async HandleWebhookInvoiceFailed(event: IStripeWebhook.Event<Stripe.Invoice>) {
-    const customerId = event.data.object.customer;
-    const customerEmail = event.data.object.customer_email;
+    const invoice = event.data.object;
+
+    const customerId = invoice.customer;
+    const customerEmail = invoice.customer_email;
 
     await this._setNewLimits(false, customerId as string, customerEmail as string)
   }
