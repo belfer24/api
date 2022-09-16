@@ -28,40 +28,47 @@ export class StripeService {
     }
   }
 
-  async HandleWebhookCustomerCreated(event: IStripeWebhook.Event) {
-    const customerInfo = event.data.object as Stripe.Charge;
+  async HandleWebhookSubscriptionDeleted(event: IStripeWebhook.Event<Stripe.Subscription>) {
+    const customerId = event.data.object.customer;
+    const customer = await this._StripeHelper.GetCustomer(customerId as string);
+    const customerEmail = customer?.email;
 
-    await this._StripeHelper.HandleWebhookCustomerCreated(customerInfo);
+    await this._StripeHelper.setFreePlan(customerId as string);
+    await this._setNewLimits(false, customerId as string, customerEmail as string)
   }
 
-  async setFreePlan(event: IStripeWebhook.Event) {
-    await this.updatePremiumStatus(event, false);
+  async HandleWebhookInvoiceSucceeded(event: IStripeWebhook.Event<Stripe.Invoice>) {
+    const customerId = event.data.object.customer;
+    const customerEmail = event.data.object.customer_email;
+    const customerPlan = event.data.object.lines.data[0].plan?.id;
 
-    return this._StripeHelper.SetDefaultSubscritpion(event);
-  }
-
-  async updatePremiumStatus(event: IStripeWebhook.Event, isPremium: boolean) {
-    const subscriptionData = event.data.object as Stripe.Charge;
-    //@ts-ignore
-    const userPlanId = subscriptionData.items.data.plan.id;
-    const dailyLimit = isPremium ? 2000 : 200;
-
-    if (userPlanId === StripeConstants.PremiumPlan) {
-      await this.userModel.findOneAndUpdate(
-        {
-          billing: {
-            stripe: {
-              customerId: subscriptionData.customer,
-            },
-          },
-        },
-        {
-          billing: {
-            paid: isPremium,
-            dailyLimit,
-          },
-        },
-      );
+    if (customerPlan === StripeConstants.PremiumPlan) {
+      await this._setNewLimits(true, customerId as string, customerEmail as string)
     }
+  }
+
+  async HandleWebhookInvoiceFailed(event: IStripeWebhook.Event<Stripe.Invoice>) {
+    const customerId = event.data.object.customer;
+    const customerEmail = event.data.object.customer_email;
+
+    await this._setNewLimits(false, customerId as string, customerEmail as string)
+  }
+
+  private async _setNewLimits(isPremium: boolean, customerId: string, email: string) {
+    const dailyLimit = isPremium ? 2000 : 200;
+    await this.userModel.findOneAndUpdate(
+      {
+        email
+      },
+      {
+        billing: {
+          paid: isPremium,
+          stripe: {
+            customerId
+          },
+          dailyLimit,
+        },
+      },
+    );
   }
 }

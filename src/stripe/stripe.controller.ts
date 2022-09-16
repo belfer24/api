@@ -4,40 +4,46 @@ import { StripeService } from './stripe.service';
 import { HttpException } from '@nestjs/common/exceptions';
 import { IStripeWebhook } from './stripe.interface';
 import { CreatePortalDto } from './dto/stripe.dto';
+import Stripe from 'stripe';
 
 @Controller('stripe')
 export class StripeController {
   constructor(private StripeService: StripeService) {}
 
   @Post('create-portal')
-  async createPortal(@Body() createPortalDto: CreatePortalDto, @Res() res: Response) {
-    const redirectLink = await this.StripeService.createStripeProtal(createPortalDto.email);
+  async createPortal(
+    @Body() createPortalDto: CreatePortalDto,
+    @Res() res: Response,
+  ) {
+    const redirectLink = await this.StripeService.createStripeProtal(
+      createPortalDto.email,
+    );
 
     if (redirectLink) {
       return res.redirect(redirectLink);
     } else {
-      throw new HttpException('Bad request', 400)
+      throw new HttpException('Bad request', 400);
     }
   }
 
-  @Post('webhook-customer-created')
-  async customerCreated(@Body() body: IStripeWebhook.Event) {
-    return this.StripeService.HandleWebhookCustomerCreated(body)
+  @Post('webhook/subscription-deleted')
+  async HandleWebhookSubscriptionDeleted(
+    @Body() body: IStripeWebhook.Event<Stripe.Subscription>,
+  ) {
+    return this.StripeService.HandleWebhookSubscriptionDeleted(body);
   }
 
-  @Post('webhook-subscription-deleted')
-  async subscriptionDeleted(@Body() body: IStripeWebhook.Event) {
-    return this.StripeService.setFreePlan(body);
+  @Post('webhook/invoice-succeeded')
+  async HandleWebhookInvoiceSucceeded(
+    @Body() body: IStripeWebhook.Event<Stripe.Invoice>,
+  ) {
+    return this.StripeService.HandleWebhookInvoiceSucceeded(body);
   }
 
-  @Post('webhook-update-subscription')
-  async updateSubscription(@Body() body: IStripeWebhook.Event) {
-    return this.StripeService.updatePremiumStatus(body, true);
-  }
-
-  @Post('webhook-payment-failed')
-  async failedPayment(@Body() body: IStripeWebhook.Event) {
-    this.StripeService.setFreePlan(body);
-    return this.StripeService.updatePremiumStatus(body, false);
+  @Post('webhook/invoice-failed')
+  async HandleWebhookInvoiceFailed(
+    @Body() body: IStripeWebhook.Event<Stripe.Invoice>,
+  ) {
+    return this.StripeService.HandleWebhookInvoiceFailed(body);
   }
 }
