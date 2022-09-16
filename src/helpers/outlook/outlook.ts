@@ -13,6 +13,7 @@ export class OutlookHelper {
   public async checkRefreshToken(
     refreshToken: string,
   ): IOutlookHelper.Methods.Available.Response {
+    //TODO: Может обернуть в try catch?
     await this.connectToGraph(refreshToken);
 
     return true;
@@ -35,8 +36,10 @@ export class OutlookHelper {
         },
       ],
     };
-    const send = { message, saveToSentItems: false };
 
-    await this._MicrosoftHelper.Graph.post('me/sendMail', send);
+    await this._MicrosoftHelper.Graph.post('me/sendMail', {
+      message,
+      saveToSentItems: true,
+    });
   }
 }

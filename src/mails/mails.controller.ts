@@ -3,23 +3,22 @@ import { CancelSendDto } from './dto/mail.dto';
 import { IMails } from './mails.interface';
 import { MailsService } from './mails.service';
 
-@Controller('mails')
-export class MailsController {
+//TODO: Переименовать ВСЁ в mailing
+@Controller('mailing')
+export class MailingController {
   constructor(private mailsService: MailsService) {}
 
-  @Post('create-tasks')
-  async createCloudTask(
-    @Body() taskBody: IMails.CloudTasks.Task,
-  ) {
-    return this.mailsService.mailTasksCreate(taskBody);
+  @Post('start')
+  async startSending(@Body() params: IMails.Controller.StartSending.Body) {
+    return this.mailsService.startSending(params);
   }
 
-  @Post('cancel-send')
+  @Post('cancel')
   async cancelSend(@Body() cancelSendDto: CancelSendDto) {
     return this.mailsService.cancelSend(cancelSendDto);
   }
 
-  @Post('send-mails')
+  @Post('send')
   async sendMails(
     @Body() message: IMails.Messages.Message,
     @Response() res: Response,

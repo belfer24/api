@@ -5,9 +5,9 @@ import {
   ICachePlugin,
   ResponseMode,
 } from '@azure/msal-node';
-import serverLinks from '@/constants/serverLinks';
 import { MicrosoftConstants } from '@/constants/microsoft';
 import { RequestUtils } from '@/utils/request';
+import { outlookRedirectUrl } from '@/constants/urls';
 
 export class MicrosoftHelper {
   private _clientId: string = process.env.OUTLOOK_CLIENT_ID || '';
@@ -61,7 +61,7 @@ export class MicrosoftHelper {
         'User.Read',
         'Mail.Send',
       ],
-      redirectUri: serverLinks.outlookRedirectLink,
+      redirectUri: outlookRedirectUrl,
     });
 
     return url;
@@ -69,9 +69,10 @@ export class MicrosoftHelper {
 
   public async GetAuthData({ code }: { code: string }) {
     const client = this._CreateOAuthClient();
+
     const data = await client.acquireTokenByCode({
       code,
-      redirectUri: serverLinks.outlookRedirectLink,
+      redirectUri: outlookRedirectUrl,
       scopes: [
         'openid',
         'email',
@@ -82,7 +83,7 @@ export class MicrosoftHelper {
       ],
     });
 
-    if (!data || !data.account || !data.account.username) throw Error('Error!');
+    if (!data || !data.account || !data.account.username) throw Error('ERROR');
 
     return { account: data.account, refreshToken: this._refreshToken };
   }

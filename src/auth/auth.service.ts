@@ -18,13 +18,12 @@ export class AuthService {
   async GetOutlookRedirectUrl() {
     const redirectUrl = await this._MicrosoftHelper.CreateRedirectUrl();
 
-    return { redirectUrl };
+    return redirectUrl;
   }
 
-  async HandleOutlookOAuth(
-    params: IAuth.Service.OutlookRedirectHandler.Params,
-  ) {
-    const { code } = params;
+  async HandleOutlookOAuth({
+    code,
+  }: IAuth.Service.OutlookRedirectHandler.Params) {
     const { account, refreshToken } = await this._MicrosoftHelper.GetAuthData({
       code,
     });
@@ -33,6 +32,8 @@ export class AuthService {
       .exists({ email: account.username })
       .exec();
 
+    // Добавить проверку на наличие юзера в страйпе
+
     if (!user) {
       const newCustomer = await this._StripeHelper.CreateCustomer({
         email: account.username,
@@ -40,7 +41,7 @@ export class AuthService {
 
       await this.userModel.create({
         email: account.username,
-        refresh_token: refreshToken,
+        refreshToken,
         createdAt: Date.now(),
         sentMessagesToday: 0,
         billing: {
@@ -53,8 +54,8 @@ export class AuthService {
       });
     }
 
-    const redirectUrl = `chrome-extension://${process.env.CHROME_EXTENSION_ID}/oauth/oauth.html?email=${account.username}&token=${refreshToken}&name=${account.name}`;
+    const redirectUrl = `chrome-extension://${process.env.CHROME_EXTENSION_ID}/oauth/oauth.html?email=${account.username}&refreshToken=${refreshToken}&name=${account.name}`;
 
-    return { redirectUrl };
+    return redirectUrl;
   }
 }

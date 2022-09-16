@@ -10,18 +10,18 @@ export class AuthController {
 
   @Post('redirect')
   async getOutlookRedirectUrl() {
-    const { redirectUrl } = await this.authService.GetOutlookRedirectUrl();
+    const redirectUrl = await this.authService.GetOutlookRedirectUrl();
 
     return { data: { redirectUrl } };
   }
-
-  @Get('redirect/handle-redirect')
+  // handle-redirect
+  @Get('handle-redirect')
   async handleOutlookOAuth(
     @Query() query: IAuth.Controller.OutlookRedirectHandler.Query,
     @Res() res: Response,
   ) {
-    const { redirectUrl }: OutlookOAuthDto =
-      await this.authService.HandleOutlookOAuth(query);
+    //TODO: Придумай понятное название для переменной
+    const redirectUrl = await this.authService.HandleOutlookOAuth(query);
 
     return res.redirect(redirectUrl);
   }

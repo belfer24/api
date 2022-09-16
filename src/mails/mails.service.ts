@@ -9,9 +9,10 @@ import { User, UserDocument } from '@/users/schemas/user.schema';
 import { IMails } from './mails.interface';
 import { Mails, MailsDocument } from './schemas/mail.schema';
 import { CancelSendDto } from './dto/mail.dto';
+import { cloudTasksUrl } from '@/constants/urls';
 
 @Injectable()
-export class MailsService {
+export class SendingService {
   constructor(
     @InjectModel(Contacts.name)
     private readonly contactsModel: Model<ContactsDocument>,
@@ -21,85 +22,89 @@ export class MailsService {
     private readonly _OutlookHelper: OutlookHelper,
   ) {}
 
-  async mailTasksCreate(params: IMails.CloudTasks.Task) {
-    const { outlookMessages, outlookRefreshToken, csvData, email } = params;
-    const user = await this.userModel.findOne({ email }).exec();
+  //TODO: Нужно доставать id с токена в куках, делать запрос в БД нужно по id, а не по email ОЧЕНЬ ВАЖНО!!!!!!!!
+  async Start({ mails, csvData, refreshToken }: IMails.Controller.Start.Body) {
+    const user = await this.userModel.findOne({ refreshToken }).exec();
 
     await this.contactsModel.create({
       data: csvData,
       createdAt: Date.now(),
-      userId: user?._id,
+      userId: user!._id || 'anonymous',
     });
 
-    await this.mailsModel.create({
-      mails: outlookMessages,
+    if (!user) throw new Error('ERROR');
+
+    //TODO: Добавить статусы isSent во все mails
+
+    //TODO: Передалать статус на булевые, isCompleted, isInProgress
+    const { _id: mailingId } = await this.mailsModel.create({
+      mails,
       createdAt: Date.now(),
-      email,
-      status: 'In progress',
-      refresh_token: outlookRefreshToken,
+      userId: user._id,
+      isInProgress: true,
     });
 
-    await this.userModel.findOneAndUpdate({ email }, { isSending: true });
-
-    let intervalId: NodeJS.Timer;
-    const delay = 10000;
-
-    intervalId = setInterval(async () => {
-      const sendData = await this.mailsModel.findOne({ email }).exec();
-      const lastMessage = sendData?.mails.length === 0;
-      if (sendData) {
-        if (lastMessage || sendData?.status === 'Stop') {
-          clearInterval(intervalId);
-          await this.mailsModel.deleteOne({ email });
-          await this.userModel.findOneAndUpdate(
-            { email },
-            { isSending: false },
-          );
-        } else {
-          await this._CloudTasks.createCloudTask({
-            payload: {
-              message: sendData?.mails[0],
-              lastMessage,
-              outlookRefreshToken,
-              email,
-            },
-            delay: 0,
-          });
-
-          await this.mailsModel.updateOne(
-            { email },
-            {
-              $pop: { mails: 1 },
-            },
-          );
-        }
-      } else {
-        throw Error('User not found!');
-      }
-    }, delay);
+    await this._CloudTasks.createCloudTask({
+      payload: {
+        mailingId,
+      },
+      delay: 0,
+    });
 
     return { success: true };
   }
 
-  async cancelSend({ email }: CancelSendDto) {
-    await this.mailsModel.updateOne({ email }, { status: 'Stop' });
+  async Cancel({ mailingId }) {
+    //TODO: Получить mailing и поставить isInProcess = false
   }
 
-  async sendOutlookMessage(body: IMails.Messages.Message) {
-    if (body.outlookRefreshToken) {
-      await this._OutlookHelper.connectToGraph(body.outlookRefreshToken);
-      await this._OutlookHelper.sendMessage(body.message);
-    } else {
-      throw Error('RefreshToken is undefined');
+  async Send({ mailingId }: IMails.Controller.Send.Body) {
+    const mailing = await this.mailsModel.findById(mailingId).exec();
+
+    if (!mailing) throw new Error('ERROR');
+
+    if (mailing.isInProcess) {
+      const notSentMails = mailing.mails.filter((mail) => mail.isSent !== true);
+
+      if (notSentMails.length) {
+        //TODO: ДОПИСАТЬ ЛОГИКУ
+      }
+
+      const mail = notSentMails[0];
+
+      const user = await this.userModel.findById(mailing.userId).exec();
+
+      if (!user) throw new Error('ERROR');
+
+      await this._OutlookHelper.connectToGraph(user.refreshToken);
+      await this._OutlookHelper.sendMessage({
+        subject: mail.subject,
+        text: mail.text,
+        to: mail.to,
+      });
+
+      //TODO: Дописать логику. Поменять isSent для отправленного письма на true
+
+      await this.userModel.findOneAndUpdate(
+        { _id: user.id },
+        { $inc: { sentMessagesToday: 1 } },
+      );
+
+      //TODO: Добавить проверку есть ли в списке ещё письма которые нужно отправить и только тогда создавать таску на отправку
+      const isMoreMailsToSentExist = !!notSentMails[1];
+      if (isMoreMailsToSentExist) {
+        //TODO: Поставь delay
+        await this._CloudTasks.createCloudTask({
+          payload: {
+            mailingId,
+          },
+          delay: 10000,
+        });
+      } else {
+        //TODO: Поставить isInProcess = false
+      }
     }
 
-    const email = body.email;
-    const increment = 1;
-    await this.userModel.findOneAndUpdate(
-      { email },
-      { $inc: { sentMessagesToday: increment } },
-    );
-
-    return {};
+    return;
   }
 }

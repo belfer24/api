@@ -1,26 +1,23 @@
+import { Controller } from '@nestjs/common';
+
 export namespace IMails {
-  export type MessageBody = {
+  export type Mail = {
     to: string;
-    from?: string;
     subject: string;
     text: string;
   };
 
-  export namespace CloudTasks {
-    export type Task = {
-      outlookMessages: MessageBody[];
-      outlookRefreshToken: string;
-      csvData: unknown[];
-      email: string;
-    };
-  }
+  export namespace Controller {
+    export namespace Start {
+      export type Body = {
+        refreshToken: string;
+        mails: Mail[];
+        csvData: Record<string, unknown>[];
+      };
+    }
 
-  export namespace Messages {
-    export type Message = {
-      message: MessageBody;
-      lastLetter?: boolean;
-      outlookRefreshToken: string;
-      email: string;
-    };
+    export namespace Send {
+      export type Body = { mailingId: string };
+    }
   }
 }
