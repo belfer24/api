@@ -2,15 +2,19 @@ import { Controller, Get, Res, Body, Post, Query } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { IAuth } from './auth.inteface';
-import { OutlookOAuthDto } from './dto/auth.dto';
+import { OutlookOAuthDto, OutlookRedirectUrlDto } from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('redirect')
-  async getOutlookRedirectUrl() {
-    const { redirectUrl } = await this.authService.GetOutlookRedirectUrl();
+  async getOutlookRedirectUrl(
+    @Body() { chromeExtensionId }: OutlookRedirectUrlDto,
+  ) {
+    const { redirectUrl } = await this.authService.GetOutlookRedirectUrl({
+      chromeExtensionId,
+    });
 
     return { data: { redirectUrl } };
   }
