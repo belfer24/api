@@ -25,7 +25,7 @@ export class StripeController {
       throw new HttpException('Bad request', 400);
     }
   }
-
+  // TODO: Подумать над безопасностью веб-хуков, что бы только страйп мог стучать по этим роутам
   @Post('webhook/customer-created')
   async HandleWebhookCustomerCreated(
     @Body() body: IStripeWebhook.Event<Stripe.Customer>,

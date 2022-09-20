@@ -1,5 +1,3 @@
-import { Controller } from '@nestjs/common';
-
 export namespace IMails {
   export type Mail = {
     to: string;

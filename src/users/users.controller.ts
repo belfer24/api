@@ -7,14 +7,17 @@ import { UsersService } from './users.service';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('get-one')
+  // TODO: Добавить гарду для верификации токена
+  // TODO: Доставай id с токена и по нему получай юзера
+  @Get('me')
   async getUser(@Body() body: UserDto) {
     const email = body.email;
     const user = await this.usersService.findUser(email);
-    
+
     return user;
   }
 
+  // Сделай через нативную CRON в Nest.js
   @Post('reset-limits')
   async resetDailySendLimits(@Headers() headers: ResetLimitsDto) {
     return this.usersService.resetDailySendLimits(headers.authorization);
