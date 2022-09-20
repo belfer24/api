@@ -16,10 +16,4 @@ export class UsersController {
 
     return user;
   }
-
-  // Сделай через нативную CRON в Nest.js
-  @Post('reset-limits')
-  async resetDailySendLimits(@Headers() headers: ResetLimitsDto) {
-    return this.usersService.resetDailySendLimits(headers.authorization);
-  }
 }

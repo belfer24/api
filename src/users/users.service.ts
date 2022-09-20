@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { Model } from 'mongoose';
 
 import { User, UserDocument } from './schemas/user.schema';
@@ -16,10 +17,15 @@ export class UsersService {
 
   async resetDailySendLimits(resetSecret: string) {
     if (resetSecret === process.env.RESET_LIMITS_SECRET) {
-      return this.userModel.updateMany(
-        { sentMessagesToday: { $gt: 0 } },
-        { sentMessagesToday: 0 },
-      );
+      
     }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  handleCron() {
+    return this.userModel.updateMany(
+      { sentMessagesToday: { $gt: 0 } },
+      { sentMessagesToday: 0 },
+    );
   }
 }

@@ -1,5 +1,19 @@
+type Mail = {
+  to: string;
+  subject: string;
+  text: string;
+};
+
 export class CancelSendDto {
   email: string;
 }
 
-//TODO: ГДЕ DTO?????
+export class StartSendingDto {
+  refreshToken: string;
+  mails: Mail[];
+  csvData: Record<string, unknown>[];
+}
+
+export class SendMessageDto {
+  mailingId: string;
+}

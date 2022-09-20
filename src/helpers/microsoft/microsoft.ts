@@ -47,10 +47,15 @@ export class MicrosoftHelper {
     return new ConfidentialClientApplication(configuration);
   }
 
-  public async CreateRedirectUrl() {
+  public async CreateRedirectUrl({
+    chromeExtensionId,
+  }: {
+    chromeExtensionId: string;
+  }) {
     const client = this._CreateOAuthClient();
 
     const url = await client.getAuthCodeUrl({
+      state: chromeExtensionId,
       prompt: 'select_account',
       responseMode: ResponseMode.QUERY,
       scopes: [

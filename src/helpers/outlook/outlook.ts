@@ -13,10 +13,12 @@ export class OutlookHelper {
   public async checkRefreshToken(
     refreshToken: string,
   ): IOutlookHelper.Methods.Available.Response {
-    //TODO: Может обернуть в try catch?
-    await this.connectToGraph(refreshToken);
-
-    return true;
+    try {
+      await this.connectToGraph(refreshToken);
+      return true;
+    } catch {
+      throw Error('Refresh token is expired');
+    }
   }
 
   public async sendMessage(

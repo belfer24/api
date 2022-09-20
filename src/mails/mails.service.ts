@@ -8,11 +8,9 @@ import { OutlookHelper } from '@/helpers/outlook/outlook';
 import { User, UserDocument } from '@/users/schemas/user.schema';
 import { IMails } from './mails.interface';
 import { Mails, MailsDocument } from './schemas/mail.schema';
-import { CancelSendDto } from './dto/mail.dto';
-import { cloudTasksUrl } from '@/constants/urls';
 
 @Injectable()
-export class SendingService {
+export class MailingService {
   constructor(
     @InjectModel(Contacts.name)
     private readonly contactsModel: Model<ContactsDocument>,
@@ -41,7 +39,7 @@ export class SendingService {
       mails,
       createdAt: Date.now(),
       userId: user._id,
-      isInProgress: true,
+      isInProcess: true,
     });
 
     await this._CloudTasks.createCloudTask({
@@ -88,10 +86,8 @@ export class SendingService {
         { $inc: { sentMessagesToday: 1 } },
       );
 
-      //TODO: Добавить проверку есть ли в списке ещё письма которые нужно отправить и только тогда создавать таску на отправку
       const isMoreMailsToSentExist = !!notSentMails[1];
       if (isMoreMailsToSentExist) {
-        //TODO: Поставь delay
         await this._CloudTasks.createCloudTask({
           payload: {
             mailingId,
@@ -99,7 +95,7 @@ export class SendingService {
           delay: 10000,
         });
       } else {
-        //TODO: Поставить isInProcess = false
+        await this.mailsModel.findOneAndUpdate({_id: mailingId}, {isInProcess: false});
       }
     }
 
