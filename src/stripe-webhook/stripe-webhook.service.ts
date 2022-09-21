@@ -27,7 +27,7 @@ export class StripeWebhookService {
     const customerId = subscription.customer as string;
     const customer = await this._StripeHelper.GetCustomerById(customerId);
 
-    if (!customer) throw new Error('ERROR');
+    if (!customer) throw new Error('Stripe customer not found!');
 
     const customerEmail = customer.email as string;
 
@@ -44,7 +44,7 @@ export class StripeWebhookService {
     const customerEmail = invoice.customer_email as string;
     const customerPlan = invoice.lines.data[0].plan;
 
-    if (!customerPlan) throw new Error('ERROR');
+    if (!customerPlan) throw new Error('Customer plan not found!');
 
     const customerPlanId = customerPlan.id;
 

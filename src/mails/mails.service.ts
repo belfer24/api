@@ -32,7 +32,7 @@ export class MailingService {
       userId: user!._id || 'anonymous',
     });
 
-    if (!user) throw new Error('ERROR');
+    if (!user) throw new Error('User not found!');
 
     const { _id: mailingId } = await this.mailsModel.create({
       mails,
@@ -60,7 +60,7 @@ export class MailingService {
   async Send({ mailingId }: IMails.Controller.Send.Body) {
     const mailing = await this.mailsModel.findById(mailingId).exec();
 
-    if (!mailing) throw new Error('ERROR');
+    if (!mailing) throw new Error('No mails found for sending!');
 
     if (mailing.isInProcess) {
       const notSentMails = mailing.mails.filter((mail) => mail.isSent !== true);
@@ -69,7 +69,7 @@ export class MailingService {
       
       const user = await this.userModel.findById(mailing.userId).exec();
       
-      if (!user) throw new Error('ERROR');
+      if (!user) throw new Error('User not found!');
 
       await this._OutlookHelper.connectToGraph(user.refreshToken);
       await this._OutlookHelper.sendMessage({

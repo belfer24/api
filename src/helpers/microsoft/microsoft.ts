@@ -88,7 +88,7 @@ export class MicrosoftHelper {
       ],
     });
 
-    if (!data || !data.account || !data.account.username) throw Error('ERROR');
+    if (!data || !data.account || !data.account.username) throw Error('Auth data not found!');
 
     return { account: data.account, refreshToken: this._refreshToken };
   }
