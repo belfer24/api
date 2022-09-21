@@ -10,6 +10,7 @@ import { MailsModule } from './mails/mails.module';
 import { AuthModule } from './auth/auth.module';
 import { StripeModule } from './stripe/stripe.module';
 import { SelectorsModule } from './selectors/selectors.module';
+import { StripeWebhookModule } from './stripe-webhook/stripe-webhook.module';
 
 const uri = process.env.MONGODB_URI as string;
 
@@ -21,6 +22,7 @@ const uri = process.env.MONGODB_URI as string;
     AuthModule,
     StripeModule,
     SelectorsModule,
+    StripeWebhookModule,
   ],
   controllers: [AppController],
   providers: [AppService],
