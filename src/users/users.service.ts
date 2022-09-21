@@ -11,14 +11,8 @@ export class UsersService {
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
   ) {}
 
-  async findUser(email: string): Promise<User | undefined | null> {
-    return this.userModel.findOne({ email });
-  }
-
-  async resetDailySendLimits(resetSecret: string) {
-    if (resetSecret === process.env.RESET_LIMITS_SECRET) {
-      
-    }
+  async findUser(refreshToken: string): Promise<User | undefined | null> {
+    return this.userModel.findOne({ refreshToken });
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)

@@ -1,9 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
 import { Document } from 'mongoose';
 
 export type MailsDocument = Mails & Document;
 
-@Schema({ _id: false })
+@Schema()
 class Mail {
   @Prop()
   to: string;

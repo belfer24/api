@@ -14,7 +14,7 @@ export class MailingController {
 
   @Post('cancel')
   async cancelSend(@Body() cancelSendDto: CancelSendDto) {
-    return this.mailingService.Cancel(cancelSendDto);
+    return this.mailingService.Cancel(cancelSendDto.refreshToken);
   }
 
   @Post('send')

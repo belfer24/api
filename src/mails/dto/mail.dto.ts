@@ -2,10 +2,11 @@ type Mail = {
   to: string;
   subject: string;
   text: string;
+  isSent: boolean;
 };
 
 export class CancelSendDto {
-  email: string;
+  refreshToken: string;
 }
 
 export class StartSendingDto {

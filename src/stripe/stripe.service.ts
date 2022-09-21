@@ -14,9 +14,9 @@ export class StripeService {
     private readonly _StripeHelper: StripeHelper,
   ) {}
 
-  async createStripeProtal(email: string) {
-    //TODO: Сделать поиск по ID из токена
-    const user = await this.UsersCollection.findOne({ email }).exec();
+  async createStripeProtal(refreshToken: string) {
+    // const user = await this.UsersCollection.findOne({ email }).exec();
+    const user = await this.userModel.findOne({ refreshToken }).exec();
 
     if (user) {
       const portalLink = await this._StripeHelper.CreateStripePortalUrl(

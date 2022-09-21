@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { Contacts, ContactsDocument } from '@/contacts/schemas/contacts.schema';
 import { CloudTasks } from '@/helpers/cloud-tasks/cloud-tasks';
 
@@ -20,10 +20,12 @@ export class MailingService {
     private readonly _OutlookHelper: OutlookHelper,
   ) {}
 
-  //TODO: Нужно доставать id с токена в куках, делать запрос в БД нужно по id, а не по email ОЧЕНЬ ВАЖНО!!!!!!!!
-  async Start({ mails, csvData, refreshToken }: IMails.Controller.Start.Body) {
+  async Start(params: IMails.Controller.Start.Body) {
+    const { mails, csvData, refreshToken } = params;
+    console.log(refreshToken);
+    
     const user = await this.userModel.findOne({ refreshToken }).exec();
-
+    
     await this.contactsModel.create({
       data: csvData,
       createdAt: Date.now(),
@@ -32,9 +34,6 @@ export class MailingService {
 
     if (!user) throw new Error('ERROR');
 
-    //TODO: Добавить статусы isSent во все mails
-
-    //TODO: Передалать статус на булевые, isCompleted, isInProgress
     const { _id: mailingId } = await this.mailsModel.create({
       mails,
       createdAt: Date.now(),
@@ -52,8 +51,11 @@ export class MailingService {
     return { success: true };
   }
 
-  async Cancel({ mailingId }) {
+  async Cancel(refreshToken: string) {
     //TODO: Получить mailing и поставить isInProcess = false
+    const user = await this.userModel.findOne({ refreshToken });
+    
+    return this.mailsModel.findOneAndUpdate({userId: user!._id}, {isInProcess: false});
   }
 
   async Send({ mailingId }: IMails.Controller.Send.Body) {
@@ -63,23 +65,29 @@ export class MailingService {
 
     if (mailing.isInProcess) {
       const notSentMails = mailing.mails.filter((mail) => mail.isSent !== true);
-
-      if (notSentMails.length) return;
+      
+      // if (notSentMails.length) return;
 
       const mail = notSentMails[0];
-
+      
       const user = await this.userModel.findById(mailing.userId).exec();
-
+      
       if (!user) throw new Error('ERROR');
 
-      await this._OutlookHelper.connectToGraph(user.refreshToken);
-      await this._OutlookHelper.sendMessage({
-        subject: mail.subject,
-        text: mail.text,
-        to: mail.to,
-      });
-
-      //TODO: Дописать логику. Поменять isSent для отправленного письма на true
+      // await this._OutlookHelper.connectToGraph(user.refreshToken);
+      // await this._OutlookHelper.sendMessage({
+      //   subject: mail.subject,
+      //   text: mail.text,
+      //   to: mail.to,
+      // });
+      //@ts-ignore
+      console.log(mail.id);
+      
+      //@ts-ignore
+      const lol = await this.mailsModel.findOne({mails: { $elemMatch: { _id: mail.id}}});
+      // console.log(await this.mailsModel.findOne({'mails.$._id': mail._id}));
+      
+      // console.log(await this.mailsModel.findOneAndUpdate({mails:{_id: mail.id} }, { $set: { mails: {isSent: true} }}, (error) => { throw Error("ERROR")}))
 
       await this.userModel.findOneAndUpdate(
         { _id: user.id },
@@ -92,7 +100,7 @@ export class MailingService {
           payload: {
             mailingId,
           },
-          delay: 10000,
+          delay: 1,
         });
       } else {
         await this.mailsModel.findOneAndUpdate({_id: mailingId}, {isInProcess: false});

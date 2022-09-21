@@ -3,6 +3,7 @@ export namespace IMails {
     to: string;
     subject: string;
     text: string;
+    isSent: boolean;
   };
 
   export namespace Controller {

@@ -18,7 +18,7 @@ export class AuthController {
 
     return { data: { redirectUrl } };
   }
-  // handle-redirect
+
   @Get('handle-redirect')
   async handleOutlookOAuth(
     @Query() query: IAuth.Controller.OutlookRedirectHandler.Query,
