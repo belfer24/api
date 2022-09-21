@@ -64,8 +64,6 @@ export class MailingService {
 
     if (mailing.isInProcess) {
       const notSentMails = mailing.mails.filter((mail) => mail.isSent !== true);
-      
-      // if (notSentMails.length) return;
 
       const mail = notSentMails[0];
       

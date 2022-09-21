@@ -5,6 +5,7 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { User, UserSchema } from './schemas/user.schema';
 import { ScheduleModule } from '@nestjs/schedule';
+import { OutlookHelper } from '@/helpers/outlook/outlook';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     ScheduleModule.forRoot(),
   ],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersService, OutlookHelper],
   exports: [UsersService],
 })
 export class UsersModule {}

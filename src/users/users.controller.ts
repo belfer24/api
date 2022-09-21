@@ -1,15 +1,16 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Headers, UseGuards } from '@nestjs/common';
 import { GetMeDto } from './dto/user.dto';
+import { UsersGuard } from './users.guard';
 import { UsersService } from './users.service';
 
 @Controller('users')
+@UseGuards(UsersGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  // TODO: Добавить гарду для верификации токена
   @Get('me')
-  async getUser(@Query() query: GetMeDto) {
-    const user = await this.usersService.findUser(query.refreshToken);
+  async getUser(@Headers() headers: GetMeDto) {
+    const user = await this.usersService.findUser(headers.authorization);
     
     return user;
   }

@@ -1,4 +1,4 @@
 export class GetMeDto {
-  readonly refreshToken: string;
+  readonly authorization: string;
 }
 
