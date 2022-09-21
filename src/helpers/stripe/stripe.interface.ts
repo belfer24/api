@@ -1,6 +1,12 @@
 import Stripe from 'stripe';
 
 export namespace IStripeHelper {
+  export namespace Guard {
+    export type Params = {
+      body: string | Buffer;
+      signature: any;
+    }
+  }
   export namespace Customer {
     export namespace Get {
       export type Request = {

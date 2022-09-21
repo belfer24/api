@@ -1,6 +1,7 @@
 import Stripe from 'stripe';
 import { StripeConstants } from '@/constants/stripe';
 import { IStripeHelper } from './stripe.interface';
+import { IStripe } from '@/stripe/stripe.interface';
 
 export class StripeHelper {
   private _Stripe: Stripe;
@@ -58,4 +59,13 @@ export class StripeHelper {
 
     return subscription;
   }
+
+  // public async isStripeCreateEvent(params: IStripeHelper.Guard.Params) {
+  //   const { body, signature } = params
+  //   try {
+  //     await this._Stripe.webhooks.constructEvent(body, signature)
+  //   } catch (error) {
+      
+  //   }
+  // }
 }
