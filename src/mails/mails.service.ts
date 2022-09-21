@@ -52,7 +52,6 @@ export class MailingService {
   }
 
   async Cancel(refreshToken: string) {
-    //TODO: Получить mailing и поставить isInProcess = false
     const user = await this.userModel.findOne({ refreshToken });
     
     return this.mailsModel.findOneAndUpdate({userId: user!._id}, {isInProcess: false});
@@ -74,20 +73,14 @@ export class MailingService {
       
       if (!user) throw new Error('ERROR');
 
-      // await this._OutlookHelper.connectToGraph(user.refreshToken);
-      // await this._OutlookHelper.sendMessage({
-      //   subject: mail.subject,
-      //   text: mail.text,
-      //   to: mail.to,
-      // });
-      //@ts-ignore
-      console.log(mail.id);
-      
-      //@ts-ignore
-      const lol = await this.mailsModel.findOne({mails: { $elemMatch: { _id: mail.id}}});
-      // console.log(await this.mailsModel.findOne({'mails.$._id': mail._id}));
-      
-      // console.log(await this.mailsModel.findOneAndUpdate({mails:{_id: mail.id} }, { $set: { mails: {isSent: true} }}, (error) => { throw Error("ERROR")}))
+      await this._OutlookHelper.connectToGraph(user.refreshToken);
+      await this._OutlookHelper.sendMessage({
+        subject: mail.subject,
+        text: mail.text,
+        to: mail.to,
+      });
+     
+      await this.mailsModel.updateOne({'_id': mailingId ,'mails.to': mail.to}, {'mails.$.isSent': true});
 
       await this.userModel.findOneAndUpdate(
         { _id: user.id },
