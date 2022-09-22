@@ -59,13 +59,4 @@ export class StripeHelper {
 
     return subscription;
   }
-
-  // public async isStripeCreateEvent(params: IStripeHelper.Guard.Params) {
-  //   const { body, signature } = params
-  //   try {
-  //     await this._Stripe.webhooks.constructEvent(body, signature)
-  //   } catch (error) {
-      
-  //   }
-  // }
 }

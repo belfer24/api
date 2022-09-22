@@ -36,10 +36,18 @@ export class AuthService {
     });
 
     const user = await this.UserCollection
-      .exists({ email: account.username })
+      .findOne({ email: account.username })
       .exec();
 
-    // Добавить проверку на наличие юзера в страйпе
+    if(user) {
+      const stripeCustomerId = user.billing.stripe.customerId;
+
+      try {
+        await this._StripeHelper.GetCustomerById(stripeCustomerId);
+      } catch (error) {
+        throw Error('User with this customerId not found!')
+      }
+    }
 
     if (!user) {
       const newCustomer = await this._StripeHelper.CreateCustomer({
