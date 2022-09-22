@@ -14,13 +14,13 @@ export class StripeService {
     private readonly _StripeHelper: StripeHelper,
   ) {}
 
-  async createStripeProtal(refreshToken: string) {
-    // const user = await this.UsersCollection.findOne({ email }).exec();
+  async createStripePortal(refreshToken: string, returnUrl: string) {
     const user = await this.UserCollection.findOne({ refreshToken }).exec();
 
     if (user) {
       const portalLink = await this._StripeHelper.CreateStripePortalUrl(
         user.billing.stripe.customerId,
+        returnUrl
       );
 
       return portalLink;

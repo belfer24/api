@@ -1,7 +1,6 @@
 import Stripe from 'stripe';
 import { StripeConstants } from '@/constants/stripe';
 import { IStripeHelper } from './stripe.interface';
-import { IStripe } from '@/stripe/stripe.interface';
 
 export class StripeHelper {
   private _Stripe: Stripe;
@@ -35,11 +34,10 @@ export class StripeHelper {
     return undefined;
   }
 
-  public async CreateStripePortalUrl(customerId: string) {
-    // У тебя урл динамический, поменяй return_url
+  public async CreateStripePortalUrl(customerId: string, returnUrl: string) {
     const session = await this._Stripe.billingPortal.sessions.create({
       customer: customerId,
-      return_url: 'https://outlook.live.com/mail/0/',
+      return_url: returnUrl,
     });
 
     return session.url;
