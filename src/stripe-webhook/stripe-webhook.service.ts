@@ -10,7 +10,8 @@ import Stripe from 'stripe';
 @Injectable()
 export class StripeWebhookService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(User.name)
+    private readonly UserCollection: Model<UserDocument>,
     private readonly _StripeHelper: StripeHelper,
   ) {}
   async HandleWebhookCustomerCreated(
@@ -26,13 +27,14 @@ export class StripeWebhookService {
 
     const customerId = subscription.customer as string;
     const customer = await this._StripeHelper.GetCustomerById(customerId);
+    const isPremium = false;
 
     if (!customer) throw new Error('Stripe customer not found!');
 
     const customerEmail = customer.email as string;
 
     await this._StripeHelper.setFreePlan(customerId);
-    await this._SetNewLimits(false, customerId, customerEmail);
+    await this._SetNewLimits({isPremium, customerId, customerEmail});
   }
 
   async HandleWebhookInvoiceSucceeded(
@@ -43,13 +45,14 @@ export class StripeWebhookService {
     const customerId = invoice.customer as string;
     const customerEmail = invoice.customer_email as string;
     const customerPlan = invoice.lines.data[0].plan;
+    const isPremium = true;
 
     if (!customerPlan) throw new Error('Customer plan not found!');
 
     const customerPlanId = customerPlan.id;
 
     if (customerPlanId === StripeConstants.PremiumPlanPriceId) {
-      await this._SetNewLimits(true, customerId, customerEmail);
+      await this._SetNewLimits({isPremium, customerId, customerEmail});
     }
   }
 
@@ -58,26 +61,26 @@ export class StripeWebhookService {
   ) {
     const invoice = event.data.object;
 
-    const customerId = invoice.customer;
+    const customerId = invoice.customer as string;
     const customerEmail = invoice.customer_email;
+    if (!customerEmail) {
+      throw Error('Email not found!');
+    }
+    const isPremium = false;
 
-    await this._SetNewLimits(
-      false,
-      customerId as string,
-      customerEmail as string,
-    );
+    await this._SetNewLimits({
+      isPremium,
+      customerId,
+      customerEmail,
+    });
   }
 
-  private async _SetNewLimits(
-    isPremium: boolean,
-    customerId: string,
-    email: string,
-  ) {
-    // Функция всегда принимает только 1 аргумент, используй деструктуризацию объекта
+  private async _SetNewLimits(params: IStripeWebhook.Limits.Params) {
+    const { isPremium, customerId, customerEmail } = params;
     const dailyLimit = isPremium ? 2000 : 200;
-    await this.userModel.findOneAndUpdate(
+    await this.UserCollection.findOneAndUpdate(
       {
-        email,
+        email: customerEmail,
       },
       {
         billing: {

@@ -6,4 +6,12 @@ export namespace IStripeWebhook {
       object: Stripe.Event.Data.Object & T;
     };
   }
+
+  export namespace Limits {
+    export type Params = {
+      isPremium: boolean;
+      customerId: string;
+      customerEmail: string;
+    }
+  }
 }

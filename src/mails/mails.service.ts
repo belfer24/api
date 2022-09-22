@@ -13,9 +13,9 @@ import { Mails, MailsDocument } from './schemas/mail.schema';
 export class MailingService {
   constructor(
     @InjectModel(Contacts.name)
-    private readonly contactsModel: Model<ContactsDocument>,
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-    @InjectModel(Mails.name) private readonly mailsModel: Model<MailsDocument>,
+    private readonly ContactsCollection: Model<ContactsDocument>,
+    @InjectModel(User.name) private readonly UserCollection: Model<UserDocument>,
+    @InjectModel(Mails.name) private readonly MailsCollection: Model<MailsDocument>,
     private readonly _CloudTasks: CloudTasks,
     private readonly _OutlookHelper: OutlookHelper,
   ) {}
@@ -24,9 +24,9 @@ export class MailingService {
     const { mails, csvData, refreshToken } = params;
     console.log(refreshToken);
     
-    const user = await this.userModel.findOne({ refreshToken }).exec();
+    const user = await this.UserCollection.findOne({ refreshToken }).exec();
     
-    await this.contactsModel.create({
+    await this.ContactsCollection.create({
       data: csvData,
       createdAt: Date.now(),
       userId: user!._id || 'anonymous',
@@ -34,7 +34,7 @@ export class MailingService {
 
     if (!user) throw new Error('User not found!');
 
-    const { _id: mailingId } = await this.mailsModel.create({
+    const { _id: mailingId } = await this.MailsCollection.create({
       mails,
       createdAt: Date.now(),
       userId: user._id,
@@ -52,13 +52,13 @@ export class MailingService {
   }
 
   async Cancel(refreshToken: string) {
-    const user = await this.userModel.findOne({ refreshToken });
+    const user = await this.UserCollection.findOne({ refreshToken });
     
-    return this.mailsModel.findOneAndUpdate({userId: user!._id}, {isInProcess: false});
+    return this.MailsCollection.findOneAndUpdate({userId: user!._id, isInProcess: true}, {isInProcess: false});
   }
 
   async Send({ mailingId }: IMails.Controller.Send.Body) {
-    const mailing = await this.mailsModel.findById(mailingId).exec();
+    const mailing = await this.MailsCollection.findById(mailingId).exec();
 
     if (!mailing) throw new Error('No mails found for sending!');
 
@@ -67,7 +67,7 @@ export class MailingService {
 
       const mail = notSentMails[0];
       
-      const user = await this.userModel.findById(mailing.userId).exec();
+      const user = await this.UserCollection.findById(mailing.userId).exec();
       
       if (!user) throw new Error('User not found!');
 
@@ -78,9 +78,9 @@ export class MailingService {
         to: mail.to,
       });
      
-      await this.mailsModel.updateOne({'_id': mailingId ,'mails.to': mail.to}, {'mails.$.isSent': true});
+      await this.MailsCollection.updateOne({'_id': mailingId ,'mails.to': mail.to}, {'mails.$.isSent': true});
 
-      await this.userModel.findOneAndUpdate(
+      await this.UserCollection.findOneAndUpdate(
         { _id: user.id },
         { $inc: { sentMessagesToday: 1 } },
       );
@@ -91,10 +91,10 @@ export class MailingService {
           payload: {
             mailingId,
           },
-          delay: 1,
+          delay: 10,
         });
       } else {
-        await this.mailsModel.findOneAndUpdate({_id: mailingId}, {isInProcess: false});
+        await this.MailsCollection.findOneAndUpdate({_id: mailingId}, {isInProcess: false});
       }
     }
 

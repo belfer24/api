@@ -8,16 +8,16 @@ import { User, UserDocument } from './schemas/user.schema';
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(User.name) private readonly UserCollection: Model<UserDocument>,
   ) {}
 
   async findUser(refreshToken: string): Promise<User | undefined | null> {
-    return this.userModel.findOne({ refreshToken });
+    return this.UserCollection.findOne({ refreshToken });
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
   handleCron() {
-    return this.userModel.updateMany(
+    return this.UserCollection.updateMany(
       { sentMessagesToday: { $gt: 0 } },
       { sentMessagesToday: 0 },
     );

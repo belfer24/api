@@ -9,7 +9,7 @@ import { IAuth } from './auth.inteface';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(User.name) private readonly UserCollection: Model<UserDocument>,
 
     private readonly _MicrosoftHelper: MicrosoftHelper,
     private readonly _StripeHelper: StripeHelper,
@@ -35,7 +35,7 @@ export class AuthService {
       code,
     });
 
-    const user = await this.userModel
+    const user = await this.UserCollection
       .exists({ email: account.username })
       .exec();
 
@@ -46,7 +46,7 @@ export class AuthService {
         email: account.username,
       });
 
-      await this.userModel.create({
+      await this.UserCollection.create({
         email: account.username,
         refreshToken,
         createdAt: Date.now(),

@@ -10,13 +10,13 @@ import Stripe from 'stripe';
 @Injectable()
 export class StripeService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(User.name) private readonly UserCollection: Model<UserDocument>,
     private readonly _StripeHelper: StripeHelper,
   ) {}
 
   async createStripeProtal(refreshToken: string) {
     // const user = await this.UsersCollection.findOne({ email }).exec();
-    const user = await this.userModel.findOne({ refreshToken }).exec();
+    const user = await this.UserCollection.findOne({ refreshToken }).exec();
 
     if (user) {
       const portalLink = await this._StripeHelper.CreateStripePortalUrl(
