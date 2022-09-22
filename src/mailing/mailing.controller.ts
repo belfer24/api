@@ -1,7 +1,7 @@
 import { Body, Controller, Post, Response } from '@nestjs/common';
-import { CancelSendDto, SendMessageDto, StartSendingDto } from './dto/mail.dto';
+import { CancelSendDto, SendMessageDto, StartSendingDto } from './dto/mailing.dto';
 
-import { MailingService } from './mails.service';
+import { MailingService } from './mailing.service';
 
 @Controller('mailing')
 export class MailingController {

@@ -1,4 +1,4 @@
-import { IMails } from '@/mails/mails.interface';
+import { IMails } from '@/mailing/mailing.interface';
 
 export namespace ICloudTasks {
   export namespace Enum {

@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { Contacts, ContactsDocument } from '@/contacts/schemas/contacts.schema';
 import { CloudTasks } from '@/helpers/cloud-tasks/cloud-tasks';
 
 import { OutlookHelper } from '@/helpers/outlook/outlook';
 import { User, UserDocument } from '@/users/schemas/user.schema';
-import { IMails } from './mails.interface';
-import { Mails, MailsDocument } from './schemas/mail.schema';
+import { IMails } from './mailing.interface';
+import { Mailing, MailingDocument } from './schemas/mailing.schema';
 
 @Injectable()
 export class MailingService {
@@ -15,7 +15,7 @@ export class MailingService {
     @InjectModel(Contacts.name)
     private readonly ContactsCollection: Model<ContactsDocument>,
     @InjectModel(User.name) private readonly UserCollection: Model<UserDocument>,
-    @InjectModel(Mails.name) private readonly MailsCollection: Model<MailsDocument>,
+    @InjectModel(Mailing.name) private readonly MailsCollection: Model<MailingDocument>,
     private readonly _CloudTasks: CloudTasks,
     private readonly _OutlookHelper: OutlookHelper,
   ) {}
