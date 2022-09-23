@@ -13,6 +13,7 @@ export class AuthController {
     @Body() { chromeExtensionId }: OutlookRedirectUrlDto,
   ) {
     const redirectUrl = await this.authService.GetOutlookRedirectUrl({
+
       chromeExtensionId,
     });
 
