@@ -1,3 +1,4 @@
 export class CreatePortalDto {
-  email: string;
+  refreshToken: string;
+  returnUrl: string;
 }

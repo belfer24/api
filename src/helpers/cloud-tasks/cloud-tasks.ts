@@ -2,22 +2,22 @@ import { CloudTasksClient } from '@google-cloud/tasks';
 import { ICloudTasks } from '@/helpers/cloud-tasks/cloud-tasks.interface';
 import { google } from '@google-cloud/tasks/build/protos/protos';
 
-import cloudTasksCreds from '@/constants/google';
+import { cloudTasksUrl } from '@/constants/urls';
 
 export class CloudTasks {
   async createCloudTask({ payload, delay }: ICloudTasks.Task) {
     const client = new CloudTasksClient({ fallback: true });
 
-    const parent = client.queuePath(
-      cloudTasksCreds.project,
-      cloudTasksCreds.location,
-      cloudTasksCreds.queue,
-    );
+    const project = 'outlook-extension-14ab7';
+    const queue = 'mails';
+    const location = 'us-central1';
+
+    const parent = client.queuePath(project, location, queue);
 
     const task: google.cloud.tasks.v2.ITask = {
       httpRequest: {
         httpMethod: ICloudTasks.Enum.RequestMethod.Post,
-        url: cloudTasksCreds.url,
+        url: cloudTasksUrl,
       },
     };
 
@@ -34,8 +34,6 @@ export class CloudTasks {
       };
     }
 
-    const request = { parent, task };
-
-    return client.createTask(request);
+    return client.createTask({ parent, task });
   }
 }

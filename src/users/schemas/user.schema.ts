@@ -51,7 +51,7 @@ export class User {
   email: string;
 
   @Prop()
-  refresh_token: string;
+  refreshToken: string;
 
   @Prop({ type: BillingSchema })
   billing: Billing;
@@ -61,9 +61,6 @@ export class User {
 
   @Prop()
   sentMessagesToday: number;
-
-  @Prop()
-  isSending: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

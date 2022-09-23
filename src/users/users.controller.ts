@@ -1,22 +1,17 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
-import { Headers } from '@nestjs/common/decorators';
-import { ResetLimitsDto, UserDto } from './dto/user.dto';
+import { Controller, Get, Headers, UseGuards } from '@nestjs/common';
+import { GetMeDto } from './dto/user.dto';
+import { UsersGuard } from './users.guard';
 import { UsersService } from './users.service';
 
 @Controller('users')
+@UseGuards(UsersGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('get-one')
-  async getUser(@Body() body: UserDto) {
-    const email = body.email;
-    const user = await this.usersService.findUser(email);
+  @Get('me')
+  async getUser(@Headers() headers: GetMeDto) {
+    const user = await this.usersService.findUser(headers.authorization);
     
     return user;
-  }
-
-  @Post('reset-limits')
-  async resetDailySendLimits(@Headers() headers: ResetLimitsDto) {
-    return this.usersService.resetDailySendLimits(headers.authorization);
   }
 }

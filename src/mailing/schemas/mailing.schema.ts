@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type MailsDocument = Mails & Document;
+export type MailingDocument = Mailing & Document;
 
-@Schema({ _id: false })
+@Schema()
 class Mail {
   @Prop()
   to: string;
@@ -13,13 +13,19 @@ class Mail {
 
   @Prop()
   subject: string;
+
+  @Prop()
+  isSent: boolean;
 }
 
 const MailSchema = SchemaFactory.createForClass(Mail);
 
 @Schema()
-export class Mails {
-  @Prop({ type: [MailSchema]})
+export class Mailing {
+  @Prop()
+  userId: string;
+
+  @Prop({ type: [MailSchema] })
   mails: Mail[];
 
   @Prop()
@@ -29,13 +35,7 @@ export class Mails {
   updatedAt: Date;
 
   @Prop()
-  email: string;
-
-  @Prop()
-  status: string;
-
-  @Prop()
-  refresh_token: string;
+  isInProcess: boolean;
 }
 
-export const MailsSchema = SchemaFactory.createForClass(Mails);
+export const MailingSchema = SchemaFactory.createForClass(Mailing);

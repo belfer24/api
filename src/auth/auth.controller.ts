@@ -12,21 +12,21 @@ export class AuthController {
   async getOutlookRedirectUrl(
     @Body() { chromeExtensionId }: OutlookRedirectUrlDto,
   ) {
-    const { redirectUrl } = await this.authService.GetOutlookRedirectUrl({
+    const redirectUrl = await this.authService.GetOutlookRedirectUrl({
+
       chromeExtensionId,
     });
 
     return { data: { redirectUrl } };
   }
 
-  @Get('redirect/handle-redirect')
+  @Get('handle-redirect')
   async handleOutlookOAuth(
     @Query() query: IAuth.Controller.OutlookRedirectHandler.Query,
     @Res() res: Response,
   ) {
-    const { redirectUrl }: OutlookOAuthDto =
-      await this.authService.HandleOutlookOAuth(query);
+    const url = await this.authService.HandleOutlookOAuth(query);
 
-    return res.redirect(redirectUrl);
+    return res.redirect(url);
   }
 }

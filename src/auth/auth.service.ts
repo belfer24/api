@@ -9,7 +9,7 @@ import { IAuth } from './auth.inteface';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(User.name) private readonly UserCollection: Model<UserDocument>,
 
     private readonly _MicrosoftHelper: MicrosoftHelper,
     private readonly _StripeHelper: StripeHelper,
@@ -24,7 +24,7 @@ export class AuthService {
       chromeExtensionId,
     });
 
-    return { redirectUrl };
+    return redirectUrl;
   }
 
   async HandleOutlookOAuth(
@@ -35,18 +35,28 @@ export class AuthService {
       code,
     });
 
-    const user = await this.userModel
-      .exists({ email: account.username })
+    const user = await this.UserCollection
+      .findOne({ email: account.username })
       .exec();
+
+    if(user) {
+      const stripeCustomerId = user.billing.stripe.customerId;
+
+      try {
+        await this._StripeHelper.GetCustomerById(stripeCustomerId);
+      } catch (error) {
+        throw Error('User with this customerId not found!')
+      }
+    }
 
     if (!user) {
       const newCustomer = await this._StripeHelper.CreateCustomer({
         email: account.username,
       });
 
-      await this.userModel.create({
+      await this.UserCollection.create({
         email: account.username,
-        refresh_token: refreshToken,
+        refreshToken,
         createdAt: Date.now(),
         sentMessagesToday: 0,
         billing: {
@@ -57,10 +67,13 @@ export class AuthService {
           dailyLimit: 200,
         },
       });
+    } else {
+      await this.UserCollection.findOneAndUpdate({ email: account.username }, { refreshToken });
     }
 
-    const redirectUrl = `chrome-extension://${chromeExtensionId}/oauth/oauth.html?email=${account.username}&token=${refreshToken}&name=${account.name}`;
+    const redirectUrl = `chrome-extension://${chromeExtensionId}/oauth/oauth.html?email=${account.username}&refreshToken=${refreshToken}&name=${account.name}`;
+    
+    return redirectUrl;
 
-    return { redirectUrl };
   }
 }

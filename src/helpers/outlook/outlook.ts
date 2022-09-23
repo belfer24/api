@@ -13,9 +13,12 @@ export class OutlookHelper {
   public async checkRefreshToken(
     refreshToken: string,
   ): IOutlookHelper.Methods.Available.Response {
-    await this.connectToGraph(refreshToken);
-
-    return true;
+    try {
+      await this.connectToGraph(refreshToken);
+      return true;
+    } catch {
+      throw Error('Refresh token is expired');
+    }
   }
 
   public async sendMessage(
@@ -35,8 +38,10 @@ export class OutlookHelper {
         },
       ],
     };
-    const send = { message, saveToSentItems: false };
 
-    await this._MicrosoftHelper.Graph.post('me/sendMail', send);
+    await this._MicrosoftHelper.Graph.post('me/sendMail', {
+      message,
+      saveToSentItems: true,
+    });
   }
 }

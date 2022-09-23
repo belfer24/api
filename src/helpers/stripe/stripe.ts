@@ -24,18 +24,20 @@ export class StripeHelper {
     return newCustomer;
   }
 
-  public async GetCustomer(id: string) {
+  public async GetCustomerById(id: string) {
     const customer = await this._Stripe.customers.retrieve(id);
 
     if (customer.deleted !== true) {
       return customer;
     }
+
+    return undefined;
   }
 
-  public async CreateStripePortal(customer: string) {
+  public async CreateStripePortalUrl(customerId: string, returnUrl: string) {
     const session = await this._Stripe.billingPortal.sessions.create({
-      customer: customer,
-      return_url: 'https://outlook.live.com/mail/0/',
+      customer: customerId,
+      return_url: returnUrl,
     });
 
     return session.url;
@@ -45,7 +47,7 @@ export class StripeHelper {
     const options: Stripe.SubscriptionCreateParams = {
       customer: customerId,
       collection_method: 'charge_automatically',
-      items: [{ price: StripeConstants.FreePlan, quantity: 1 }],
+      items: [{ price: StripeConstants.FreePlanPriceId, quantity: 1 }],
       payment_behavior: 'allow_incomplete',
       proration_behavior: 'always_invoice',
     };

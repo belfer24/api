@@ -3,23 +3,24 @@ import { StripeHelper } from '@/helpers/stripe/stripe';
 import { User, UserDocument } from '@/users/schemas/user.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { IStripeWebhook } from './stripe.interface';
+import { IStripe } from './stripe.interface';
 import { StripeConstants } from '@/constants/stripe';
 import Stripe from 'stripe';
 
 @Injectable()
 export class StripeService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    @InjectModel(User.name) private readonly UserCollection: Model<UserDocument>,
     private readonly _StripeHelper: StripeHelper,
   ) {}
 
-  async createStripeProtal(email: string) {
-    const user = await this.userModel.findOne({ email }).exec();
-
+  async createStripePortal(refreshToken: string, returnUrl: string) {
+    const user = await this.UserCollection.findOne({ refreshToken }).exec();
+    
     if (user) {
-      const portalLink = await this._StripeHelper.CreateStripePortal(
+      const portalLink = await this._StripeHelper.CreateStripePortalUrl(
         user.billing.stripe.customerId,
+        returnUrl
       );
 
       return portalLink;
@@ -28,57 +29,5 @@ export class StripeService {
     }
   }
 
-  async HandleWebhookCustomerCreated(event: IStripeWebhook.Event<Stripe.Customer>) {
-    return this._StripeHelper.setFreePlan(event.data.object.id)
-  }
-
-  async HandleWebhookSubscriptionDeleted(event: IStripeWebhook.Event<Stripe.Subscription>) {
-    const suvscription = event.data.object;
-
-    const customerId = suvscription.customer;
-    const customer = await this._StripeHelper.GetCustomer(customerId as string);
-    const customerEmail = customer?.email;
-
-    await this._StripeHelper.setFreePlan(customerId as string);
-    await this._setNewLimits(false, customerId as string, customerEmail as string)
-  }
-
-  async HandleWebhookInvoiceSucceeded(event: IStripeWebhook.Event<Stripe.Invoice>) {
-    const invoice = event.data.object;
-
-    const customerId = invoice.customer;
-    const customerEmail = invoice.customer_email;
-    const customerPlan = invoice.lines.data[0].plan?.id;
-
-    if (customerPlan === StripeConstants.PremiumPlan) {
-      await this._setNewLimits(true, customerId as string, customerEmail as string)
-    }
-  }
-
-  async HandleWebhookInvoiceFailed(event: IStripeWebhook.Event<Stripe.Invoice>) {
-    const invoice = event.data.object;
-
-    const customerId = invoice.customer;
-    const customerEmail = invoice.customer_email;
-
-    await this._setNewLimits(false, customerId as string, customerEmail as string)
-  }
-
-  private async _setNewLimits(isPremium: boolean, customerId: string, email: string) {
-    const dailyLimit = isPremium ? 2000 : 200;
-    await this.userModel.findOneAndUpdate(
-      {
-        email
-      },
-      {
-        billing: {
-          paid: isPremium,
-          stripe: {
-            customerId
-          },
-          dailyLimit,
-        },
-      },
-    );
-  }
+  
 }

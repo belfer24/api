@@ -1,3 +1,5 @@
+import { IMails } from '@/mailing/mailing.interface';
+
 export namespace ICloudTasks {
   export namespace Enum {
     export enum RequestMethod {
@@ -14,19 +16,8 @@ export namespace ICloudTasks {
     }
   }
 
-  export type Payload = {
-    message: {
-      to: string,
-      subject: string,
-      text: string,
-    },
-    outlookRefreshToken: string,
-    lastMessage: boolean,
-    email: string,
-  }
-
   export type Task = {
-    payload: Payload,
-    delay: number,
-  }
+    payload: IMails.Controller.Send.Body;
+    delay: number;
+  };
 }
