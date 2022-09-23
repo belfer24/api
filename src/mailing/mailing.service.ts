@@ -14,18 +14,19 @@ export class MailingService {
   constructor(
     @InjectModel(Contacts.name)
     private readonly ContactsCollection: Model<ContactsDocument>,
-    @InjectModel(User.name) private readonly UserCollection: Model<UserDocument>,
-    @InjectModel(Mailing.name) private readonly MailsCollection: Model<MailingDocument>,
+    @InjectModel(User.name)
+    private readonly UserCollection: Model<UserDocument>,
+    @InjectModel(Mailing.name)
+    private readonly MailingCollection: Model<MailingDocument>,
     private readonly _CloudTasks: CloudTasks,
     private readonly _OutlookHelper: OutlookHelper,
   ) {}
 
   async Start(params: IMails.Controller.Start.Body) {
     const { mails, csvData, refreshToken } = params;
-    console.log(refreshToken);
-    
+
     const user = await this.UserCollection.findOne({ refreshToken }).exec();
-    
+
     await this.ContactsCollection.create({
       data: csvData,
       createdAt: Date.now(),
@@ -34,7 +35,7 @@ export class MailingService {
 
     if (!user) throw new Error('User not found!');
 
-    const { _id: mailingId } = await this.MailsCollection.create({
+    const { _id: mailingId } = await this.MailingCollection.create({
       mails,
       createdAt: Date.now(),
       userId: user._id,
@@ -53,12 +54,15 @@ export class MailingService {
 
   async Cancel(refreshToken: string) {
     const user = await this.UserCollection.findOne({ refreshToken });
-    
-    return this.MailsCollection.findOneAndUpdate({userId: user!._id, isInProcess: true}, {isInProcess: false});
+
+    return this.MailingCollection.findOneAndUpdate(
+      { userId: user!._id, isInProcess: true },
+      { isInProcess: false },
+    );
   }
 
   async Send({ mailingId }: IMails.Controller.Send.Body) {
-    const mailing = await this.MailsCollection.findById(mailingId).exec();
+    const mailing = await this.MailingCollection.findById(mailingId).exec();
 
     if (!mailing) throw new Error('No mails found for sending!');
 
@@ -66,9 +70,9 @@ export class MailingService {
       const notSentMails = mailing.mails.filter((mail) => mail.isSent !== true);
 
       const mail = notSentMails[0];
-      
+
       const user = await this.UserCollection.findById(mailing.userId).exec();
-      
+
       if (!user) throw new Error('User not found!');
 
       await this._OutlookHelper.connectToGraph(user.refreshToken);
@@ -77,8 +81,11 @@ export class MailingService {
         text: mail.text,
         to: mail.to,
       });
-     
-      await this.MailsCollection.updateOne({'_id': mailingId ,'mails.to': mail.to}, {'mails.$.isSent': true});
+
+      await this.MailingCollection.updateOne(
+        { _id: mailingId, 'mails.to': mail.to },
+        { 'mails.$.isSent': true },
+      );
 
       await this.UserCollection.findOneAndUpdate(
         { _id: user.id },
@@ -91,13 +98,28 @@ export class MailingService {
           payload: {
             mailingId,
           },
-          delay: 10,
+          delay: 100,
         });
       } else {
-        await this.MailsCollection.findOneAndUpdate({_id: mailingId}, {isInProcess: false});
+        await this.MailingCollection.findOneAndUpdate(
+          { _id: mailingId },
+          { isInProcess: false },
+        );
       }
     }
 
     return;
+  }
+
+  async IsUserSending(refreshToken: string) {
+    const user = await this.UserCollection.findOne({ refreshToken });
+    const mailings = await this.MailingCollection.findOne({
+      userId: user!.id,
+      isInProcess: true,
+    });
+
+    if (!mailings) return false;
+
+    return true;
   }
 }

@@ -67,6 +67,8 @@ export class AuthService {
           dailyLimit: 200,
         },
       });
+    } else {
+      await this.UserCollection.findOneAndUpdate({ email: account.username }, { refreshToken });
     }
 
     const redirectUrl = `chrome-extension://${chromeExtensionId}/oauth/oauth.html?email=${account.username}&refreshToken=${refreshToken}&name=${account.name}`;

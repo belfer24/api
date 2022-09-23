@@ -18,3 +18,7 @@ export class StartSendingDto {
 export class SendMessageDto {
   mailingId: string;
 }
+
+export class HeadersDto {
+  authorization: string;
+}

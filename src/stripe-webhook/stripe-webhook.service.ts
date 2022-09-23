@@ -34,7 +34,7 @@ export class StripeWebhookService {
     const customerEmail = customer.email as string;
 
     await this._StripeHelper.setFreePlan(customerId);
-    await this._SetNewLimits({isPremium, customerId, customerEmail});
+    await this._SetNewLimits({ isPremium, customerId, customerEmail });
   }
 
   async HandleWebhookInvoiceSucceeded(
@@ -52,7 +52,7 @@ export class StripeWebhookService {
     const customerPlanId = customerPlan.id;
 
     if (customerPlanId === StripeConstants.PremiumPlanPriceId) {
-      await this._SetNewLimits({isPremium, customerId, customerEmail});
+      await this._SetNewLimits({ isPremium, customerId, customerEmail });
     }
   }
 

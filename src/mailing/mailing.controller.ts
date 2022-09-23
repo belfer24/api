@@ -1,5 +1,5 @@
-import { Body, Controller, Post, Response } from '@nestjs/common';
-import { CancelSendDto, SendMessageDto, StartSendingDto } from './dto/mailing.dto';
+import { Body, Controller, Get, Headers, Post, Response } from '@nestjs/common';
+import { CancelSendDto, HeadersDto, SendMessageDto, StartSendingDto } from './dto/mailing.dto';
 
 import { MailingService } from './mailing.service';
 
@@ -25,5 +25,10 @@ export class MailingController {
     await this.mailingService.Send(sendMessageDto);
 
     return res.json();
+  }
+
+  @Get('check-sending')
+  async isUserSending(@Headers() headers: HeadersDto) {
+    return this.mailingService.IsUserSending(headers.authorization);
   }
 }

@@ -14,7 +14,7 @@ export class StripeController {
     @Res() res: Response,
   ) {
     const redirectLink = await this.StripeService.createStripePortal(
-      createPortalDto.email,
+      createPortalDto.refreshToken,
       createPortalDto.returnUrl
     );
 
