@@ -98,7 +98,7 @@ export class MailingService {
           payload: {
             mailingId,
           },
-          delay: 100,
+          delay: 10,
         });
       } else {
         await this.MailingCollection.findOneAndUpdate(
