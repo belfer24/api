@@ -3,9 +3,6 @@ import { StripeHelper } from '@/helpers/stripe/stripe';
 import { User, UserDocument } from '@/users/schemas/user.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { IStripe } from './stripe.interface';
-import { StripeConstants } from '@/constants/stripe';
-import Stripe from 'stripe';
 
 @Injectable()
 export class StripeService {
