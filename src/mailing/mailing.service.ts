@@ -40,6 +40,7 @@ export class MailingService {
       createdAt: Date.now(),
       userId: user._id,
       isInProcess: true,
+      sentAt: (Date.now() + ((mails.length - 1) * 10 * 1000)),
     });
 
     await this._CloudTasks.createCloudTask({
@@ -75,12 +76,12 @@ export class MailingService {
 
       if (!user) throw new Error('User not found!');
 
-      await this._OutlookHelper.connectToGraph(user.refreshToken);
-      await this._OutlookHelper.sendMessage({
-        subject: mail.subject,
-        text: mail.text,
-        to: mail.to,
-      });
+      // await this._OutlookHelper.connectToGraph(user.refreshToken);
+      // await this._OutlookHelper.sendMessage({
+      //   subject: mail.subject,
+      //   text: mail.text,
+      //   to: mail.to,
+      // });
 
       await this.MailingCollection.updateOne(
         { _id: mailingId, 'mails.to': mail.to },
@@ -113,13 +114,19 @@ export class MailingService {
 
   async IsUserSending(refreshToken: string) {
     const user = await this.UserCollection.findOne({ refreshToken });
-    const mailings = await this.MailingCollection.findOne({
+    const mailing = await this.MailingCollection.findOne({
       userId: user!.id,
       isInProcess: true,
     });
 
-    if (!mailings) return false;
+    if (!mailing) return {
+      isSending: false,
+      mailing: null,
+    };
 
-    return true;
+    return {
+      isSending: true,
+      mailing,
+    };
   }
 }
