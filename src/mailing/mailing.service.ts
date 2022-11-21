@@ -24,6 +24,7 @@ export class MailingService {
 
   async Start(params: IMails.Controller.Start.Body) {
     const { mails, csvData, refreshToken } = params;
+    const delay = 10;
 
     const user = await this.UserCollection.findOne({ refreshToken }).exec();
 
@@ -35,22 +36,25 @@ export class MailingService {
 
     if (!user) throw new Error('User not found!');
 
-    const { _id: mailingId } = await this.MailingCollection.create({
+    const mailing = await this.MailingCollection.create({
       mails,
       createdAt: Date.now(),
       userId: user._id,
       isInProcess: true,
-      sentAt: (Date.now() + ((mails.length - 1) * 10 * 1000)),
+      sentAt: (Date.now() + ((mails.length - 1) * delay * 1000)),
+      hasError: false,
     });
+    
+    const mailingId = mailing._id;
 
     await this._CloudTasks.createCloudTask({
       payload: {
-        mailingId,
+        mailingId
       },
       delay: 0,
     });
 
-    return { success: true };
+    return { success: true, mailingId, mailing };
   }
 
   async Cancel(refreshToken: string) {
@@ -67,7 +71,8 @@ export class MailingService {
 
     if (!mailing) throw new Error('No mails found for sending!');
 
-    if (mailing.isInProcess) {
+    if (mailing.isInProcess && !mailing.hasError) {
+      const delay = 10;
       const notSentMails = mailing.mails.filter((mail) => mail.isSent !== true);
 
       const mail = notSentMails[0];
@@ -75,6 +80,8 @@ export class MailingService {
       const user = await this.UserCollection.findById(mailing.userId).exec();
 
       if (!user) throw new Error('User not found!');
+
+      //TODO: Remove comment
 
       // await this._OutlookHelper.connectToGraph(user.refreshToken);
       // await this._OutlookHelper.sendMessage({
@@ -99,7 +106,7 @@ export class MailingService {
           payload: {
             mailingId,
           },
-          delay: 10,
+          delay,
         });
       } else {
         await this.MailingCollection.findOneAndUpdate(
@@ -112,8 +119,8 @@ export class MailingService {
     return;
   }
 
-  async IsUserSending(refreshToken: string) {
-    const user = await this.UserCollection.findOne({ refreshToken });
+  async GetMailing(refreshToken: string) {    
+    const user = await this.UserCollection.findOne({ refreshToken });    
     const mailing = await this.MailingCollection.findOne({
       userId: user!.id,
       isInProcess: true,
@@ -128,5 +135,15 @@ export class MailingService {
       isSending: true,
       mailing,
     };
+  }
+
+  async SetError(mailingId: string) {    
+    const mailing = await this.MailingCollection.findOne({ _id: mailingId }).exec();
+
+    if (!mailing) throw Error('Mailing not found!')
+
+    if (!mailing.hasError) {
+      await mailing.updateOne({ hasError: true }).exec();
+    }
   }
 }

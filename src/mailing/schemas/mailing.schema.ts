@@ -42,6 +42,12 @@ export class Mailing {
 
   @Prop()
   sentAt: number;
+
+  @Prop()
+  hasError: boolean;
+
+  @Prop()
+  isRetried: boolean;
 }
 
 export const MailingSchema = SchemaFactory.createForClass(Mailing);

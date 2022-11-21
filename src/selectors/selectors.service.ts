@@ -10,7 +10,7 @@ export class SelectorsService {
     private readonly selectorsModel: Model<SelectorsDocument>,
   ) {}
 
-  async getAllSelectors() {
+  async GetSelectors() {
     const selectors = await this.selectorsModel.findById('6319e77256db7e5e01e5a826').exec();
 
     return selectors;
