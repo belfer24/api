@@ -41,25 +41,27 @@ export class MailingService {
       createdAt: Date.now(),
       userId: user._id,
       isInProcess: true,
-      sentAt: (Date.now() + ((mails.length - 1) * delay * 1000)),
+      //TODO: Вся математика должна быть в переменных, никакой
+      sentAt: Date.now() + (mails.length - 1) * delay * 1000,
       hasError: false,
     });
-    
+
     const mailingId = mailing._id;
 
     await this._CloudTasks.createCloudTask({
       payload: {
-        mailingId
+        mailingId,
       },
       delay: 0,
     });
 
     return { success: true, mailingId, mailing };
   }
-
+  //TODO: Приведи все params в одинаковый вид
   async Cancel(refreshToken: string) {
     const user = await this.UserCollection.findOne({ refreshToken });
 
+    //TODO: обязательно выноси в переменную и возвращай её
     return this.MailingCollection.findOneAndUpdate(
       { userId: user!._id, isInProcess: true },
       { isInProcess: false },
@@ -69,6 +71,7 @@ export class MailingService {
   async Send({ mailingId }: IMails.Controller.Send.Body) {
     const mailing = await this.MailingCollection.findById(mailingId).exec();
 
+    //TODO: Перепиши ошибку
     if (!mailing) throw new Error('No mails found for sending!');
 
     if (mailing.isInProcess && !mailing.hasError) {
@@ -101,6 +104,7 @@ export class MailingService {
       );
 
       const isMoreMailsToSentExist = !!notSentMails[1];
+
       if (isMoreMailsToSentExist) {
         await this._CloudTasks.createCloudTask({
           payload: {
@@ -115,21 +119,24 @@ export class MailingService {
         );
       }
     }
-
-    return;
   }
 
-  async GetMailing(refreshToken: string) {    
-    const user = await this.UserCollection.findOne({ refreshToken });    
+  async GetMailing(refreshToken: string) {
+    const user = await this.UserCollection.findOne({ refreshToken });
+
     const mailing = await this.MailingCollection.findOne({
       userId: user!.id,
       isInProcess: true,
     });
 
-    if (!mailing) return {
-      isSending: false,
-      mailing: null,
-    };
+    return mailing;
+
+    //TODO: Убрать isSending, рефакторнуть
+    if (!mailing)
+      return {
+        isSending: false,
+        mailing: null,
+      };
 
     return {
       isSending: true,
@@ -137,13 +144,13 @@ export class MailingService {
     };
   }
 
-  async SetError(mailingId: string) {    
-    const mailing = await this.MailingCollection.findOne({ _id: mailingId }).exec();
+  async SetError(mailingId: string) {
+    const mailing = await this.MailingCollection.findOne({
+      _id: mailingId,
+    }).exec();
 
-    if (!mailing) throw Error('Mailing not found!')
-
-    if (!mailing.hasError) {
-      await mailing.updateOne({ hasError: true }).exec();
-    }
+    if (!mailing) throw Error('Mailing not found!');
+    //TODO: Раз назвал Set, то set и должен происходить
+    await mailing.updateOne({ hasError: true }).exec();
   }
 }
