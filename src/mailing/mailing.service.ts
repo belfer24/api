@@ -83,16 +83,21 @@ export class MailingService {
 
       //TODO: Remove comment
 
-      // await this._OutlookHelper.connectToGraph(user.refreshToken);
-      // await this._OutlookHelper.sendMessage({
-      //   subject: mail.subject,
-      //   text: mail.text,
-      //   to: mail.to,
-      // });
+      await this._OutlookHelper.connectToGraph(user.refreshToken);
+      await this._OutlookHelper.sendMessage({
+        subject: mail.subject,
+        text: mail.text,
+        to: mail.to,
+      });
 
       await this.MailingCollection.updateOne(
         { _id: mailingId, 'mails.to': mail.to },
-        { 'mails.$.isSent': true },
+        { 'mails.$.isSent': true, },
+      );
+
+      await this.MailingCollection.updateOne(
+        { _id: mailingId, 'mails.to': mail.to },
+        { 'mails.$.sentAt': '$', },
       );
 
       await this.UserCollection.findOneAndUpdate(
@@ -137,7 +142,7 @@ export class MailingService {
     };
   }
 
-  async SetError(mailingId: string) {    
+  async SetError(mailingId: string) {
     const mailing = await this.MailingCollection.findOne({ _id: mailingId }).exec();
 
     if (!mailing) throw Error('Mailing not found!')
@@ -145,5 +150,18 @@ export class MailingService {
     if (!mailing.hasError) {
       await mailing.updateOne({ hasError: true }).exec();
     }
+  }
+
+  async Retry(mailingId: string) {
+    const mailing = await this.MailingCollection.findOne({ _id: mailingId });
+    if (mailing) {
+      mailing.updateOne(
+        { $set: { isRetried: true }}
+      );
+    } else {
+      throw Error('Retry failed, mailing not found');
+    }
+
+    await this.Send({ mailingId });
   }
 }

@@ -22,3 +22,7 @@ export class SendMessageDto {
 export class HeadersDto {
   authorization: string;
 }
+
+export class RetryDto {
+  mailingId: string;
+}
