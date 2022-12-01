@@ -8,12 +8,12 @@ import { OutlookOAuthDto, OutlookRedirectUrlDto } from './dto/auth.dto';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  //TODO: Подумать как убрать chromeExtensionId
   @Post('redirect')
   async getOutlookRedirectUrl(
     @Body() { chromeExtensionId }: OutlookRedirectUrlDto,
   ) {
     const redirectUrl = await this.authService.GetOutlookRedirectUrl({
-
       chromeExtensionId,
     });
 

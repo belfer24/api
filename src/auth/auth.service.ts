@@ -9,12 +9,14 @@ import { IAuth } from './auth.inteface';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(User.name) private readonly UserCollection: Model<UserDocument>,
+    @InjectModel(User.name)
+    private readonly UserCollection: Model<UserDocument>,
 
     private readonly _MicrosoftHelper: MicrosoftHelper,
     private readonly _StripeHelper: StripeHelper,
   ) {}
 
+  //TODO: Заменить тип на namespace
   async GetOutlookRedirectUrl({
     chromeExtensionId,
   }: {
@@ -35,17 +37,17 @@ export class AuthService {
       code,
     });
 
-    const user = await this.UserCollection
-      .findOne({ email: account.username })
-      .exec();
+    const user = await this.UserCollection.findOne({
+      email: account.username,
+    }).exec();
 
-    if(user) {
+    if (user) {
       const stripeCustomerId = user.billing.stripe.customerId;
 
       try {
         await this._StripeHelper.GetCustomerById(stripeCustomerId);
       } catch (error) {
-        throw Error('User with this customerId not found!')
+        throw Error('User with this customerId not found!');
       }
     }
 
@@ -68,12 +70,14 @@ export class AuthService {
         },
       });
     } else {
-      await this.UserCollection.findOneAndUpdate({ email: account.username }, { refreshToken });
+      await this.UserCollection.findOneAndUpdate(
+        { email: account.username },
+        { refreshToken },
+      );
     }
 
     const redirectUrl = `chrome-extension://${chromeExtensionId}/oauth/oauth.html?email=${account.username}&refreshToken=${refreshToken}&name=${account.name}`;
-    
-    return redirectUrl;
 
+    return redirectUrl;
   }
 }
