@@ -13,8 +13,7 @@ export class SelectorsService {
 
   async GetSelectors() {
     const selectors = await this.selectorsModel
-      .findById('6319e77256db7e5e01e5a826')
-      .exec();
+      .findById('6319e77256db7e5e01e5a826');
 
     return selectors;
   }

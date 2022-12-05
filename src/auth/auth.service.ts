@@ -39,7 +39,7 @@ export class AuthService {
 
     const user = await this.UserCollection.findOne({
       email: account.username,
-    }).exec();
+    });
 
     if (user) {
       const stripeCustomerId = user.billing.stripe.customerId;
