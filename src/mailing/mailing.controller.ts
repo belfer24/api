@@ -9,28 +9,28 @@ export class MailingController {
   constructor(private mailingService: MailingService) {}
 
   @Post('start')
-  async StartSending(@Body() startSendingDto: StartSendingDto) {
-    return this.mailingService.Start(startSendingDto);
+  async StartSending(@Body() body: StartSendingDto) {
+    return this.mailingService.Start(body);
   }
 
   @Post('cancel')
-  async CancelSend(@Body() cancelSendDto: CancelSendDto) {
-    return this.mailingService.Cancel(cancelSendDto.refreshToken);
+  async CancelSend(@Body() body: CancelSendDto) {
+    return this.mailingService.Cancel(body.refreshToken);
   }
 
   @Post('send')
   async SendMails(
-    @Body() sendMessageDto: SendMessageDto,
+    @Body() body: SendMessageDto,
     @Response() res: Response,
   ) {
     try {
-      await this.mailingService.Send(sendMessageDto);
+      await this.mailingService.Send(body);
 
       const result = await res.json();
 
       return result;
     } catch {
-      await this.mailingService.SetError(sendMessageDto.mailingId);
+      await this.mailingService.SetError(body.mailingId);
     }
   }
 
