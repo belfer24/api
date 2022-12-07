@@ -13,7 +13,7 @@ import { Mailing, MailingDocument } from './schemas/mailing.schema';
 export class MailingService {
   constructor(
     @InjectModel(Contacts.name)
-    private readonly ContactsCollection: Model<ContactsDocument>,
+    private readonly ContactCollection: Model<ContactsDocument>,
     @InjectModel(User.name)
     private readonly UserCollection: Model<UserDocument>,
     @InjectModel(Mailing.name)
@@ -28,7 +28,7 @@ export class MailingService {
 
     const user = await this.UserCollection.findOne({ refreshToken });
 
-    await this.ContactsCollection.create({
+    await this.ContactCollection.create({
       data: csvData,
       createdAt: Date.now(),
       userId: user!._id || 'anonymous',
