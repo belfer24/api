@@ -26,7 +26,7 @@ export class MailingService {
     const { mails, csvData, refreshToken } = params;
     const delay = 10;
 
-    const user = await this.UserCollection.findOne({ refreshToken }).exec();
+    const user = await this.UserCollection.findOne({ refreshToken });
 
     await this.ContactsCollection.create({
       data: csvData,
@@ -69,7 +69,7 @@ export class MailingService {
   }
 
   async Send({ mailingId }: IMails.Controller.Send.Body) {
-    const mailing = await this.MailingCollection.findById(mailingId).exec();
+    const mailing = await this.MailingCollection.findById(mailingId);
 
     //TODO: Перепиши ошибку
     if (!mailing) throw new Error('No mails found for sending!');
@@ -80,7 +80,7 @@ export class MailingService {
 
       const mail = notSentMails[0];
 
-      const user = await this.UserCollection.findById(mailing.userId).exec();
+      const user = await this.UserCollection.findById(mailing.userId);
 
       if (!user) throw new Error('User not found!');
 
@@ -147,10 +147,10 @@ export class MailingService {
   async SetError(mailingId: string) {
     const mailing = await this.MailingCollection.findOne({
       _id: mailingId,
-    }).exec();
+    });
 
     if (!mailing) throw Error('Mailing not found!');
     //TODO: Раз назвал Set, то set и должен происходить
-    await mailing.updateOne({ hasError: true }).exec();
+    await mailing.updateOne({ hasError: true });
   }
 }

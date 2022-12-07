@@ -12,7 +12,7 @@ export class StripeService {
   ) {}
 
   async createStripePortal(refreshToken: string, returnUrl: string) {
-    const user = await this.UserCollection.findOne({ refreshToken }).exec();
+    const user = await this.UserCollection.findOne({ refreshToken });
     
     if (user) {
       const portalLink = await this._StripeHelper.CreateStripePortalUrl(
