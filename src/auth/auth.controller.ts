@@ -2,7 +2,7 @@ import { Controller, Get, Res, Body, Post, Query } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { IAuth } from './auth.inteface';
-import { OutlookOAuthDto, OutlookRedirectUrlDto } from './dto/auth.dto';
+import { OutlookRedirectUrlDto } from './dto/auth.dto';
 
 @Controller('auth')
 export class AuthController {

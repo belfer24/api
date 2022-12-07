@@ -25,6 +25,4 @@ export class StripeService {
       throw Error('User not found!');
     }
   }
-
-  
 }

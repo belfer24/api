@@ -18,7 +18,7 @@ export class MicrosoftHelper {
 
   constructor() {
     this._cachePlugin = {
-      beforeCacheAccess: async (cacheContext) => {
+      beforeCacheAccess: async () => {
         return;
       },
 

@@ -57,6 +57,7 @@ export class MailingService {
 
     return { success: true, mailingId, mailing };
   }
+
   //TODO: Приведи все params в одинаковый вид
   async Cancel(refreshToken: string) {
     const user = await this.UserCollection.findOne({ refreshToken });
@@ -71,8 +72,7 @@ export class MailingService {
   async Send({ mailingId }: IMails.Controller.Send.Body) {
     const mailing = await this.MailingCollection.findById(mailingId);
 
-    //TODO: Перепиши ошибку
-    if (!mailing) throw new Error('No mails found for sending!');
+    if (!mailing) throw new Error('Mailing not found!');
 
     if (mailing.isInProcess && !mailing.hasError) {
       const delay = 10;
@@ -84,14 +84,12 @@ export class MailingService {
 
       if (!user) throw new Error('User not found!');
 
-      //TODO: Remove comment
-
-      // await this._OutlookHelper.connectToGraph(user.refreshToken);
-      // await this._OutlookHelper.sendMessage({
-      //   subject: mail.subject,
-      //   text: mail.text,
-      //   to: mail.to,
-      // });
+      await this._OutlookHelper.connectToGraph(user.refreshToken);
+      await this._OutlookHelper.sendMessage({
+        subject: mail.subject,
+        text: mail.text,
+        to: mail.to,
+      });
 
       await this.MailingCollection.updateOne(
         { _id: mailingId, 'mails.to': mail.to },
@@ -150,7 +148,7 @@ export class MailingService {
     });
 
     if (!mailing) throw Error('Mailing not found!');
-    //TODO: Раз назвал Set, то set и должен происходить
+
     await mailing.updateOne({ hasError: true });
   }
 }

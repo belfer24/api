@@ -26,7 +26,9 @@ export class MailingController {
     try {
       await this.mailingService.Send(sendMessageDto);
 
-      return res.json();
+      const result = await res.json();
+
+      return result;
     } catch {
       await this.mailingService.SetError(sendMessageDto.mailingId);
     }
