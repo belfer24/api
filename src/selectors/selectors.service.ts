@@ -5,14 +5,13 @@ import { Selectors, SelectorsDocument } from './schemas/selectors.schema';
 
 @Injectable()
 export class SelectorsService {
-  //TODO: Collection должно
   constructor(
     @InjectModel(Selectors.name)
-    private readonly selectorsModel: Model<SelectorsDocument>,
+    private readonly SelectorCollection: Model<SelectorsDocument>,
   ) {}
 
   async GetSelectors() {
-    const selectors = await this.selectorsModel
+    const selectors = await this.SelectorCollection
       .findById('6319e77256db7e5e01e5a826');
 
     return selectors;

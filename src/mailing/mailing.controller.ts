@@ -9,17 +9,17 @@ export class MailingController {
   constructor(private mailingService: MailingService) {}
 
   @Post('start')
-  async startSending(@Body() startSendingDto: StartSendingDto) {
+  async StartSending(@Body() startSendingDto: StartSendingDto) {
     return this.mailingService.Start(startSendingDto);
   }
 
   @Post('cancel')
-  async cancelSend(@Body() cancelSendDto: CancelSendDto) {
+  async CancelSend(@Body() cancelSendDto: CancelSendDto) {
     return this.mailingService.Cancel(cancelSendDto.refreshToken);
   }
 
   @Post('send')
-  async sendMails(
+  async SendMails(
     @Body() sendMessageDto: SendMessageDto,
     @Response() res: Response,
   ) {

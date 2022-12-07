@@ -10,7 +10,7 @@ export class AuthController {
 
   //TODO: Подумать как убрать chromeExtensionId
   @Post('redirect')
-  async getOutlookRedirectUrl(
+  async GetOutlookRedirectUrl(
     @Body() { chromeExtensionId }: OutlookRedirectUrlDto,
   ) {
     const redirectUrl = await this.authService.GetOutlookRedirectUrl({
@@ -21,7 +21,7 @@ export class AuthController {
   }
 
   @Get('handle-redirect')
-  async handleOutlookOAuth(
+  async HandleOutlookOAuth(
     @Query() query: IAuth.Controller.OutlookRedirectHandler.Query,
     @Res() res: Response,
   ) {

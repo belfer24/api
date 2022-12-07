@@ -48,7 +48,7 @@ export class MailingService {
 
     const mailingId = mailing._id;
 
-    await this._CloudTasks.createCloudTask({
+    await this._CloudTasks.CreateCloudTask({
       payload: {
         mailingId,
       },
@@ -84,8 +84,8 @@ export class MailingService {
 
       if (!user) throw new Error('User not found!');
 
-      await this._OutlookHelper.connectToGraph(user.refreshToken);
-      await this._OutlookHelper.sendMessage({
+      await this._OutlookHelper.ConnectToGraph(user.refreshToken);
+      await this._OutlookHelper.SendMessage({
         subject: mail.subject,
         text: mail.text,
         to: mail.to,
@@ -104,7 +104,7 @@ export class MailingService {
       const isMoreMailsToSentExist = !!notSentMails[1];
 
       if (isMoreMailsToSentExist) {
-        await this._CloudTasks.createCloudTask({
+        await this._CloudTasks.CreateCloudTask({
           payload: {
             mailingId,
           },
