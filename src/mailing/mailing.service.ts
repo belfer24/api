@@ -36,13 +36,15 @@ export class MailingService {
 
     if (!user) throw new Error('User not found!');
 
+    const milliseconds = 1000;
+    const mailsMustBeSentAt = Date.now() + (mails.length - 1) * delay * milliseconds;
+
     const mailing = await this.MailingCollection.create({
       mails,
       createdAt: Date.now(),
       userId: user._id,
       isInProcess: true,
-      //TODO: Вся математика должна быть в переменных, никакой
-      sentAt: Date.now() + (mails.length - 1) * delay * 1000,
+      sentAt: mailsMustBeSentAt,
       hasError: false,
     });
 
@@ -58,7 +60,6 @@ export class MailingService {
     return { success: true, mailingId, mailing };
   }
 
-  //TODO: Приведи все params в одинаковый вид
   async Cancel(params: IMails.Service.Cancel.Body) {
     const { refreshToken } = params;
     const user = await this.UserCollection.findOne({ refreshToken });
@@ -67,7 +68,6 @@ export class MailingService {
       { isInProcess: false },
     );
 
-    //TODO: обязательно выноси в переменную и возвращай её
     return updatedCollection;
   }
 
