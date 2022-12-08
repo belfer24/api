@@ -10,7 +10,7 @@ export class UsersController {
 
   @Get('me')
   async getUser(@Headers() headers: GetMeDto) {
-    const user = await this.usersService.findUser(headers.authorization);
+    const user = await this.usersService.findUser(headers);
     
     return user;
   }

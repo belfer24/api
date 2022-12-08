@@ -13,9 +13,11 @@ export class StripeController {
     @Body() body: CreatePortalDto,
     @Res() res: Response,
   ) {
-    const redirectLink = await this.StripeService.createStripePortal(
-      body.refreshToken,
-      body.returnUrl,
+    const { refreshToken, returnUrl } = body;
+    const redirectLink = await this.StripeService.CreateStripePortal({
+      refreshToken,
+      returnUrl,
+    }
     );
 
     //TODO: Что будет видеть юзер на клиенте при 400?

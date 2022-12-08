@@ -4,6 +4,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Model } from 'mongoose';
 
 import { User, UserDocument } from './schemas/user.schema';
+import { IUsers } from './users.interface';
 
 @Injectable()
 export class UsersService {
@@ -11,15 +12,20 @@ export class UsersService {
     @InjectModel(User.name) private readonly UserCollection: Model<UserDocument>,
   ) {}
 
-  async findUser(refreshToken: string): Promise<User | undefined | null> {
-    return this.UserCollection.findOne({ refreshToken });
+  async findUser(params: IUsers.Service.FindUser.Body) {
+    const { authorization } = params;
+    const user = await this.UserCollection.findOne({ refreshToken: authorization });
+
+    return user;
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
-  handleCron() {
-    return this.UserCollection.updateMany(
+  async handleCron() {
+    const updatedCollection = await this.UserCollection.updateMany(
       { sentMessagesToday: { $gt: 0 } },
       { sentMessagesToday: 0 },
     );
+
+    return updatedCollection;
   }
 }
