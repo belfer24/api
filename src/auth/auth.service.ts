@@ -22,7 +22,7 @@ export class AuthService {
       chromeExtensionId,
     });
 
-    return redirectUrl;
+    return { data: { redirectUrl } };
   }
 
   async HandleOutlookOAuth(
@@ -74,6 +74,6 @@ export class AuthService {
 
     const redirectUrl = `chrome-extension://${chromeExtensionId}/oauth/oauth.html?email=${account.username}&refreshToken=${refreshToken}&name=${account.name}`;
 
-    return redirectUrl;
+    return { data: { redirectUrl } };
   }
 }

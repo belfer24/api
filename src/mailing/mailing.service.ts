@@ -60,7 +60,7 @@ export class MailingService {
       delay: 0,
     });
 
-    return { success: true, mailingId, mailing };
+    return { data: { mailingId, mailing } };
   }
 
   async Cancel(params: IMails.Service.Cancel.Body) {
@@ -71,7 +71,7 @@ export class MailingService {
       { isInProcess: false },
     );
 
-    return updatedCollection;
+    return { data: { updatedCollection } };
   }
 
   async Send(params: IMails.Service.Send.Body) {
@@ -134,7 +134,7 @@ export class MailingService {
       isInProcess: true,
     });
 
-    return mailing;
+    return { data: { mailing } };
   }
 
   async SetError(params: IMails.Service.SetError.Body) {
