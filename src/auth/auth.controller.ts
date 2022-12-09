@@ -25,7 +25,7 @@ export class AuthController {
     @Query() query: IAuth.Controller.OutlookRedirectHandler.Query,
     @Res() res: Response,
   ) {
-    const url = await this.authService.HandleOutlookOAuth(query);
+    const url = (await this.authService.HandleOutlookOAuth(query)).data.redirectUrl;
 
     return res.redirect(url);
   }

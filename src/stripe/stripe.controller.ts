@@ -1,6 +1,5 @@
 import { Body, Controller, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
-import { HttpException } from '@nestjs/common/exceptions';
 import { CreatePortalDto } from './dto/stripe.dto';
 import { StripeService } from './stripe.service';
 
@@ -14,17 +13,18 @@ export class StripeController {
     @Res() res: Response,
   ) {
     const { refreshToken, returnUrl } = body;
-    const redirectLink = await this.StripeService.CreateStripePortal({
+    const redirectLink = (await this.StripeService.CreateStripePortal({
       refreshToken,
       returnUrl,
     }
-    );
+    )).data.portalLink;
 
-    //TODO: Что будет видеть юзер на клиенте при 400?
     if (redirectLink) {
       return res.redirect(redirectLink);
     } else {
-      throw new HttpException('Bad request', 400);
+      return res.status(400).send({ 
+        error: 'Redirect link for Stripe Portal is invalid!'
+      })
     }
   }
 }
