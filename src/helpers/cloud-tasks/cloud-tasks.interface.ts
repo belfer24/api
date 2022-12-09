@@ -17,7 +17,7 @@ export namespace ICloudTasks {
   }
 
   export type Task = {
-    payload: IMails.Controller.Send.Body;
+    payload: IMails.Service.Send.Body;
     delay: number;
   };
 }

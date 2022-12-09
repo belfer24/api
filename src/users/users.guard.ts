@@ -12,7 +12,7 @@ export class UsersGuard implements CanActivate {
     const refreshToken = request.headers.authorization;
     
     try {
-      await this._OutlookHelper.checkRefreshToken(refreshToken);
+      await this._OutlookHelper.CheckRefreshToken(refreshToken);
       return true;
     } catch (error) {
       return false

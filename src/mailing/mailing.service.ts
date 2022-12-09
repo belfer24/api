@@ -8,6 +8,7 @@ import { OutlookHelper } from '@/helpers/outlook/outlook';
 import { User, UserDocument } from '@/users/schemas/user.schema';
 import { IMails } from './mailing.interface';
 import { Mailing, MailingDocument } from './schemas/mailing.schema';
+import { UTCDate } from '@/utils/UTCDate';
 
 @Injectable()
 export class MailingService {
@@ -23,6 +24,8 @@ export class MailingService {
   ) {}
 
   async Start(params: IMails.Service.Start.Body) {
+    console.log(params);
+    
     const { mails, csvData, refreshToken } = params;
     const delay = 10;
 
@@ -37,7 +40,7 @@ export class MailingService {
     if (!user) throw new Error('User not found!');
 
     const milliseconds = 1000;
-    const mailsMustBeSentAt = Date.now() + (mails.length - 1) * delay * milliseconds;
+    const mailsMustBeSentAt = UTCDate.GetDateByUTC() + (mails.length - 1) * delay * milliseconds;
 
     const mailing = await this.MailingCollection.create({
       mails,
@@ -124,7 +127,7 @@ export class MailingService {
 
   async GetMailing(params: IMails.Service.GetMailing.Body) {
     const { authorization } = params;
-    const user = await this.UserCollection.findOne({ refreshToken: authorization });
+    const user = await this.UserCollection.findOne({ refreshToken: authorization });    
 
     const mailing = await this.MailingCollection.findOne({
       userId: user!.id,
