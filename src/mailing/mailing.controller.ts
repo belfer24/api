@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Headers, Post } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Post, Patch } from '@nestjs/common';
 
 import { CancelSendDto, HeadersDto, RetryDto, SendMessageDto, StartSendingDto } from './dto/mailing.dto';
 
@@ -30,8 +30,8 @@ export class MailingController {
   }
 
   @Patch('retry')
-  async retrySending(@Body() retryDto: RetryDto) {
-    return this.mailingService.Retry(retryDto.mailingId);
+  async retrySending(@Body() body: RetryDto) {
+    return this.mailingService.Retry(body);
   }
 
   @Get('get')

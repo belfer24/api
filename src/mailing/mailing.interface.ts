@@ -27,6 +27,12 @@ export namespace IMails {
       };
     }
 
+    export namespace Retry {
+      export type Body = {
+        mailingId: string;
+      };
+    }
+
     export namespace GetMailing {
       export type Body = {
         authorization: string;

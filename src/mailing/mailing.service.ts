@@ -143,14 +143,10 @@ export class MailingService {
       _id: mailingId,
     });
 
-  
-
-    await mailing.updateOne({ hasError: true });
-    //TODO: Раз назвал Set, то set и должен происходить
-    await mailing.updateOne({ hasError: true });
+    if (mailing) await mailing.updateOne({ hasError: true });
   }
 
-  async Retry(mailingId: string) {
+  async Retry({ mailingId }: IMails.Service.Retry.Body) {
     const mailing = await this.MailingCollection.findOne({ _id: mailingId });
     if (mailing) {
       mailing.updateOne(
