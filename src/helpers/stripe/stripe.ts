@@ -6,9 +6,13 @@ export class StripeHelper {
   private _Stripe: Stripe;
 
   constructor() {
-    this._Stripe = new Stripe(StripeConstants.SecretKey, {
-      apiVersion: '2022-08-01',
-    });
+    if(StripeConstants.SecretKey) {
+      this._Stripe = new Stripe(StripeConstants.SecretKey, {
+        apiVersion: '2022-08-01',
+      });
+    } else {
+      throw Error('Stripe secret key is not valid!')
+    }
   }
 
   public async CreateCustomer(params: IStripeHelper.Customer.Create.Request) {
@@ -43,7 +47,7 @@ export class StripeHelper {
     return session.url;
   }
 
-  public async setFreePlan(customerId: string) {
+  public async SetFreePlan(customerId: string) {
     const options: Stripe.SubscriptionCreateParams = {
       customer: customerId,
       collection_method: 'charge_automatically',

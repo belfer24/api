@@ -17,7 +17,7 @@ export class StripeWebhookService {
   async HandleWebhookCustomerCreated(
     event: IStripeWebhook.Event<Stripe.Customer>,
   ) {
-    return this._StripeHelper.setFreePlan(event.data.object.id);
+    return this._StripeHelper.SetFreePlan(event.data.object.id);
   }
 
   async HandleWebhookSubscriptionDeleted(
@@ -33,7 +33,7 @@ export class StripeWebhookService {
 
     const customerEmail = customer.email as string;
 
-    await this._StripeHelper.setFreePlan(customerId);
+    await this._StripeHelper.SetFreePlan(customerId);
     await this._SetNewLimits({ isPremium, customerId, customerEmail });
   }
 
@@ -63,9 +63,9 @@ export class StripeWebhookService {
 
     const customerId = invoice.customer as string;
     const customerEmail = invoice.customer_email;
-    if (!customerEmail) {
-      throw Error('Email not found!');
-    }
+
+    if (!customerEmail) throw Error('Email not found!');
+
     const isPremium = false;
 
     await this._SetNewLimits({
@@ -78,6 +78,7 @@ export class StripeWebhookService {
   private async _SetNewLimits(params: IStripeWebhook.Limits.Params) {
     const { isPremium, customerId, customerEmail } = params;
     const dailyLimit = isPremium ? 2000 : 200;
+
     await this.UserCollection.findOneAndUpdate(
       {
         email: customerEmail,

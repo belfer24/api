@@ -16,17 +16,13 @@ export class AuthService {
     private readonly _StripeHelper: StripeHelper,
   ) {}
 
-  //TODO: Заменить тип на namespace
-  async GetOutlookRedirectUrl({
-    chromeExtensionId,
-  }: {
-    chromeExtensionId: string;
-  }) {
+  async GetOutlookRedirectUrl(params: IAuth.Service.GetOutlookRedirectUrl.Params) {
+    const { chromeExtensionId } = params;
     const redirectUrl = await this._MicrosoftHelper.CreateRedirectUrl({
       chromeExtensionId,
     });
 
-    return redirectUrl;
+    return { data: { redirectUrl } };
   }
 
   async HandleOutlookOAuth(
@@ -78,6 +74,6 @@ export class AuthService {
 
     const redirectUrl = `chrome-extension://${chromeExtensionId}/oauth/oauth.html?email=${account.username}&refreshToken=${refreshToken}&name=${account.name}`;
 
-    return redirectUrl;
+    return { data: { redirectUrl } };
   }
 }

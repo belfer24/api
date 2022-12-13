@@ -5,7 +5,7 @@ import { google } from '@google-cloud/tasks/build/protos/protos';
 import { cloudTasksUrl } from '@/constants/urls';
 
 export class CloudTasks {
-  async createCloudTask({ payload, delay }: ICloudTasks.Task) {
+  async CreateCloudTask({ payload, delay }: ICloudTasks.Task) {
     const client = new CloudTasksClient({ fallback: true });
 
     const project = 'outlook-extension-14ab7';
