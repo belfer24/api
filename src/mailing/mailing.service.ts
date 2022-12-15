@@ -23,10 +23,7 @@ export class MailingService {
     private readonly _OutlookHelper: OutlookHelper,
   ) {}
 
-  async Start(params: IMails.Service.Start.Body) {
-    console.log(params);
-    
-    const { mails, csvData, refreshToken } = params;
+  async Start({ mails, csvData, refreshToken }: IMails.Service.Start.Body) {
     const delay = 10;
 
     const user = await this.UserCollection.findOne({ refreshToken });
@@ -63,8 +60,7 @@ export class MailingService {
     return { data: { mailingId, mailing } };
   }
 
-  async Cancel(params: IMails.Service.Cancel.Body) {
-    const { refreshToken } = params;
+  async Cancel({ refreshToken }: IMails.Service.Cancel.Body) {
     const user = await this.UserCollection.findOne({ refreshToken });
     const updatedCollection = await this.MailingCollection.findOneAndUpdate(
       { userId: user!._id, isInProcess: true },
@@ -74,9 +70,10 @@ export class MailingService {
     return { data: { updatedCollection } };
   }
 
-  async Send(params: IMails.Service.Send.Body) {
-    const { mailingId } = params;
+  async Send({ mailingId }: IMails.Service.Send.Body) {
     const mailing = await this.MailingCollection.findById(mailingId);
+    console.log(mailing);
+    
 
     if (!mailing) throw new Error('Mailing not found!');
 
@@ -99,7 +96,7 @@ export class MailingService {
 
       await this.MailingCollection.updateOne(
         { _id: mailingId, 'mails.to': mail.to },
-        { 'mails.$.sentAt': '$', },
+        { 'mails.$.isSent': true, },
       );
 
       await this.UserCollection.findOneAndUpdate(
@@ -125,9 +122,8 @@ export class MailingService {
     }
   }
 
-  async GetMailing(params: IMails.Service.GetMailing.Body) {
-    const { authorization } = params;
-    const user = await this.UserCollection.findOne({ refreshToken: authorization });    
+  async GetMailing({ authorization }: IMails.Service.GetMailing.Body) {
+    const user = await this.UserCollection.findOne({ refreshToken: authorization });
 
     const mailing = await this.MailingCollection.findOne({
       userId: user!.id,
@@ -137,8 +133,7 @@ export class MailingService {
     return { data: { mailing } };
   }
 
-  async SetError(params: IMails.Service.SetError.Body) {
-    const { mailingId } = params;
+  async SetError({ mailingId }: IMails.Service.SetError.Body) {
     const mailing = await this.MailingCollection.findOne({
       _id: mailingId,
     });

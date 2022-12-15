@@ -22,7 +22,7 @@ export class StripeService {
         returnUrl
       );
 
-      return { data: { portalLink } };
+      return portalLink;
     } else {
       throw Error('User not found!');
     }
