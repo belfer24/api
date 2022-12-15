@@ -6,7 +6,9 @@ export namespace IMails {
     isSent: boolean;
   };
 
-  export namespace Controller {
+  export namespace Controller {}
+
+  export namespace Service {
     export namespace Start {
       export type Body = {
         refreshToken: string;
@@ -17,6 +19,30 @@ export namespace IMails {
 
     export namespace Send {
       export type Body = { mailingId: string };
+    }
+
+    export namespace Cancel {
+      export type Body = {
+        refreshToken: string;
+      };
+    }
+
+    export namespace Retry {
+      export type Body = {
+        mailingId: string;
+      };
+    }
+
+    export namespace GetMailing {
+      export type Body = {
+        authorization: string;
+      };
+    }
+
+    export namespace SetError {
+      export type Body = {
+        mailingId: string;
+      };
     }
   }
 }

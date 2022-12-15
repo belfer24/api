@@ -8,12 +8,13 @@ import { OutlookHelper } from '@/helpers/outlook/outlook';
 import { User, UserDocument } from '@/users/schemas/user.schema';
 import { IMails } from './mailing.interface';
 import { Mailing, MailingDocument } from './schemas/mailing.schema';
+import { UTCDate } from '@/utils/UTCDate';
 
 @Injectable()
 export class MailingService {
   constructor(
     @InjectModel(Contacts.name)
-    private readonly ContactsCollection: Model<ContactsDocument>,
+    private readonly ContactCollection: Model<ContactsDocument>,
     @InjectModel(User.name)
     private readonly UserCollection: Model<UserDocument>,
     @InjectModel(Mailing.name)
@@ -22,12 +23,12 @@ export class MailingService {
     private readonly _OutlookHelper: OutlookHelper,
   ) {}
 
-  async Start(params: IMails.Controller.Start.Body) {
-    const { mails, csvData, refreshToken } = params;
+  async Start({ mails, csvData, refreshToken }: IMails.Service.Start.Body) {
+    const delay = 10;
 
-    const user = await this.UserCollection.findOne({ refreshToken }).exec();
+    const user = await this.UserCollection.findOne({ refreshToken });
 
-    await this.ContactsCollection.create({
+    await this.ContactCollection.create({
       data: csvData,
       createdAt: Date.now(),
       userId: user!._id || 'anonymous',
@@ -35,48 +36,59 @@ export class MailingService {
 
     if (!user) throw new Error('User not found!');
 
-    const { _id: mailingId } = await this.MailingCollection.create({
+    const milliseconds = 1000;
+    const mailsMustBeSentAt = UTCDate.GetDateByUTC() + (mails.length - 1) * delay * milliseconds;
+
+    const mailing = await this.MailingCollection.create({
       mails,
       createdAt: Date.now(),
       userId: user._id,
       isInProcess: true,
+      sentAt: mailsMustBeSentAt,
+      hasError: false,
     });
 
-    await this._CloudTasks.createCloudTask({
+    const mailingId = mailing._id;
+
+    await this._CloudTasks.CreateCloudTask({
       payload: {
         mailingId,
       },
       delay: 0,
     });
 
-    return { success: true };
+    return { data: { mailingId, mailing } };
   }
 
-  async Cancel(refreshToken: string) {
+  async Cancel({ refreshToken }: IMails.Service.Cancel.Body) {
     const user = await this.UserCollection.findOne({ refreshToken });
-
-    return this.MailingCollection.findOneAndUpdate(
+    const updatedCollection = await this.MailingCollection.findOneAndUpdate(
       { userId: user!._id, isInProcess: true },
       { isInProcess: false },
     );
+
+    return { data: { updatedCollection } };
   }
 
-  async Send({ mailingId }: IMails.Controller.Send.Body) {
-    const mailing = await this.MailingCollection.findById(mailingId).exec();
+  async Send({ mailingId }: IMails.Service.Send.Body) {
+    const mailing = await this.MailingCollection.findById(mailingId);
+    console.log(mailing);
+    
 
-    if (!mailing) throw new Error('No mails found for sending!');
+    if (!mailing) throw new Error('Mailing not found!');
 
-    if (mailing.isInProcess) {
+    if (mailing.isInProcess && !mailing.hasError) {
+      const delay = 10;
       const notSentMails = mailing.mails.filter((mail) => mail.isSent !== true);
 
       const mail = notSentMails[0];
 
-      const user = await this.UserCollection.findById(mailing.userId).exec();
+      const user = await this.UserCollection.findById(mailing.userId);
 
       if (!user) throw new Error('User not found!');
 
-      await this._OutlookHelper.connectToGraph(user.refreshToken);
-      await this._OutlookHelper.sendMessage({
+      await this._OutlookHelper.ConnectToGraph(user.refreshToken);
+      await this._OutlookHelper.SendMessage({
         subject: mail.subject,
         text: mail.text,
         to: mail.to,
@@ -84,7 +96,7 @@ export class MailingService {
 
       await this.MailingCollection.updateOne(
         { _id: mailingId, 'mails.to': mail.to },
-        { 'mails.$.isSent': true },
+        { 'mails.$.isSent': true, },
       );
 
       await this.UserCollection.findOneAndUpdate(
@@ -93,12 +105,13 @@ export class MailingService {
       );
 
       const isMoreMailsToSentExist = !!notSentMails[1];
+
       if (isMoreMailsToSentExist) {
-        await this._CloudTasks.createCloudTask({
+        await this._CloudTasks.CreateCloudTask({
           payload: {
             mailingId,
           },
-          delay: 10,
+          delay,
         });
       } else {
         await this.MailingCollection.findOneAndUpdate(
@@ -107,19 +120,37 @@ export class MailingService {
         );
       }
     }
-
-    return;
   }
 
-  async IsUserSending(refreshToken: string) {
-    const user = await this.UserCollection.findOne({ refreshToken });
-    const mailings = await this.MailingCollection.findOne({
+  async GetMailing({ authorization }: IMails.Service.GetMailing.Body) {
+    const user = await this.UserCollection.findOne({ refreshToken: authorization });
+
+    const mailing = await this.MailingCollection.findOne({
       userId: user!.id,
       isInProcess: true,
     });
 
-    if (!mailings) return false;
+    return { data: { mailing } };
+  }
 
-    return true;
+  async SetError({ mailingId }: IMails.Service.SetError.Body) {
+    const mailing = await this.MailingCollection.findOne({
+      _id: mailingId,
+    });
+
+    if (mailing) await mailing.updateOne({ hasError: true });
+  }
+
+  async Retry({ mailingId }: IMails.Service.Retry.Body) {
+    const mailing = await this.MailingCollection.findOne({ _id: mailingId });
+    if (mailing) {
+      mailing.updateOne(
+        { $set: { isRetried: true }}
+      );
+    } else {
+      throw Error('Retry failed, mailing not found');
+    }
+
+    await this.Send({ mailingId });
   }
 }

@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Headers, Post, Response } from '@nestjs/common';
-import { CancelSendDto, HeadersDto, SendMessageDto, StartSendingDto } from './dto/mailing.dto';
+import { Body, Controller, Get, Headers, Post, Patch } from '@nestjs/common';
+
+import { CancelSendDto, HeadersDto, RetryDto, SendMessageDto, StartSendingDto } from './dto/mailing.dto';
 
 import { MailingService } from './mailing.service';
 
@@ -8,27 +9,33 @@ export class MailingController {
   constructor(private mailingService: MailingService) {}
 
   @Post('start')
-  async startSending(@Body() startSendingDto: StartSendingDto) {
-    return this.mailingService.Start(startSendingDto);
+  async StartSending(@Body() body: StartSendingDto) {
+    return this.mailingService.Start(body);
   }
 
   @Post('cancel')
-  async cancelSend(@Body() cancelSendDto: CancelSendDto) {
-    return this.mailingService.Cancel(cancelSendDto.refreshToken);
+  async CancelSend(@Body() body: CancelSendDto) {
+    return this.mailingService.Cancel(body);
   }
 
   @Post('send')
-  async sendMails(
-    @Body() sendMessageDto: SendMessageDto,
-    @Response() res: Response,
+  async SendMails(
+    @Body() body: SendMessageDto,
   ) {
-    await this.mailingService.Send(sendMessageDto);
-
-    return res.json();
+    try {
+      await this.mailingService.Send(body);
+    } catch {
+      await this.mailingService.SetError(body);
+    }
   }
 
-  @Get('check-sending')
-  async isUserSending(@Headers() headers: HeadersDto) {
-    return this.mailingService.IsUserSending(headers.authorization);
+  @Patch('retry')
+  async retrySending(@Body() body: RetryDto) {
+    return this.mailingService.Retry(body);
+  }
+
+  @Get('get')
+  async IsUserSending(@Headers() headers: HeadersDto) {
+    return this.mailingService.GetMailing(headers);
   }
 }

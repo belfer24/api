@@ -5,8 +5,8 @@ import { SelectorsService } from './selectors.service';
 export class SelectorsController {
   constructor(private selectorsServise: SelectorsService) {}
 
-  @Get('get-all')
-  async getAllSelectors() {
-    return this.selectorsServise.getAllSelectors();
+  @Get('get')
+  async GetSelectors() {
+    return this.selectorsServise.GetSelectors();
   }
 }

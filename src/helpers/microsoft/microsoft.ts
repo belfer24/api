@@ -18,7 +18,7 @@ export class MicrosoftHelper {
 
   constructor() {
     this._cachePlugin = {
-      beforeCacheAccess: async (cacheContext) => {
+      beforeCacheAccess: async () => {
         return;
       },
 
@@ -108,7 +108,7 @@ export class MicrosoftHelper {
     return data;
   }
 
-  public async createGraph(outlookRefreshToken: string) {
+  public async CreateGraph(outlookRefreshToken: string) {
     const tokens = await this._GetAccessTokenByRefreshToken(
       outlookRefreshToken,
     );

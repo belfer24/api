@@ -6,6 +6,12 @@ export namespace IAuth {
         code: string;
       };
     }
+
+    export namespace GetOutlookRedirectUrl {
+      export type Params = {
+        chromeExtensionId: string,
+      }
+    }
   }
 
   export namespace Controller {

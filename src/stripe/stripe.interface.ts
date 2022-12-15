@@ -7,6 +7,13 @@ export namespace IStripe {
     };
   }
   export namespace Service {
+    export namespace CreateStripePortal {
+      export type Body = {
+        refreshToken: string,
+        returnUrl: string,
+      }
+    }
+
     export type Customer = {
       id: string;
       object: string;
