@@ -19,6 +19,9 @@ class Mail {
 
   @Prop()
   sentAt: number;
+
+  @Prop()
+  isInProcess: boolean;
 }
 
 const MailSchema = SchemaFactory.createForClass(Mail);

@@ -4,7 +4,6 @@ import { Model } from 'mongoose';
 import { Contacts, ContactsDocument } from '@/contacts/schemas/contacts.schema';
 import { CloudTasks } from '@/helpers/cloud-tasks/cloud-tasks';
 
-import { OutlookHelper } from '@/helpers/outlook/outlook';
 import { User, UserDocument } from '@/users/schemas/user.schema';
 import { IMails } from './mailing.interface';
 import { Mailing, MailingDocument } from './schemas/mailing.schema';
@@ -20,11 +19,10 @@ export class MailingService {
     @InjectModel(Mailing.name)
     private readonly MailingCollection: Model<MailingDocument>,
     private readonly _CloudTasks: CloudTasks,
-    private readonly _OutlookHelper: OutlookHelper,
   ) {}
 
   async Start({ mails, csvData, refreshToken }: IMails.Service.Start.Body) {
-    const delay = 10;
+    const delay = 30;
 
     const user = await this.UserCollection.findOne({ refreshToken });
 
@@ -37,7 +35,8 @@ export class MailingService {
     if (!user) throw new Error('User not found!');
 
     const milliseconds = 1000;
-    const mailsMustBeSentAt = UTCDate.GetDateByUTC() + (mails.length - 1) * delay * milliseconds;
+    const mailsMustBeSentAt =
+      UTCDate.GetDateByUTC() + (mails.length - 1) * delay * milliseconds;
 
     const mailing = await this.MailingCollection.create({
       mails,
@@ -72,13 +71,11 @@ export class MailingService {
 
   async Send({ mailingId }: IMails.Service.Send.Body) {
     const mailing = await this.MailingCollection.findById(mailingId);
-    console.log(mailing);
-    
 
     if (!mailing) throw new Error('Mailing not found!');
 
     if (mailing.isInProcess && !mailing.hasError) {
-      const delay = 10;
+      const delay = 30;
       const notSentMails = mailing.mails.filter((mail) => mail.isSent !== true);
 
       const mail = notSentMails[0];
@@ -87,16 +84,16 @@ export class MailingService {
 
       if (!user) throw new Error('User not found!');
 
-      await this._OutlookHelper.ConnectToGraph(user.refreshToken);
-      await this._OutlookHelper.SendMessage({
-        subject: mail.subject,
-        text: mail.text,
-        to: mail.to,
-      });
+      // await this._OutlookHelper.ConnectToGraph(user.refreshToken);
+      // await this._OutlookHelper.SendMessage({
+      //   subject: mail.subject,
+      //   text: mail.text,
+      //   to: mail.to,
+      // });
 
       await this.MailingCollection.updateOne(
         { _id: mailingId, 'mails.to': mail.to },
-        { 'mails.$.isSent': true, },
+        { 'mails.$.isSent': true, 'mails.$.isInProcess': false },
       );
 
       await this.UserCollection.findOneAndUpdate(
@@ -107,6 +104,11 @@ export class MailingService {
       const isMoreMailsToSentExist = !!notSentMails[1];
 
       if (isMoreMailsToSentExist) {
+        await this.MailingCollection.updateOne(
+          { _id: mailingId, 'mails.to': notSentMails[1].to },
+          { 'mails.$.isInProcess': true },
+        );
+
         await this._CloudTasks.CreateCloudTask({
           payload: {
             mailingId,
@@ -123,14 +125,25 @@ export class MailingService {
   }
 
   async GetMailing({ authorization }: IMails.Service.GetMailing.Body) {
-    const user = await this.UserCollection.findOne({ refreshToken: authorization });
-
-    const mailing = await this.MailingCollection.findOne({
-      userId: user!.id,
-      isInProcess: true,
+    const user = await this.UserCollection.findOne({
+      refreshToken: authorization,
     });
 
-    return { data: { mailing } };
+    if (user) {
+      const mailing = await this.MailingCollection.find({
+        userId: user.id,
+      })
+        .limit(1)
+        .sort({ $natural: -1 });
+
+      if (mailing) {
+        return mailing[0];
+      } else {
+        return {};
+      }
+    } else {
+      throw Error('User not found!');
+    }
   }
 
   async SetError({ mailingId }: IMails.Service.SetError.Body) {
@@ -144,13 +157,13 @@ export class MailingService {
   async Retry({ mailingId }: IMails.Service.Retry.Body) {
     const mailing = await this.MailingCollection.findOne({ _id: mailingId });
     if (mailing) {
-      mailing.updateOne(
-        { $set: { isRetried: true }}
-      );
+      mailing.updateOne({ $set: { isRetried: true } });
     } else {
       throw Error('Retry failed, mailing not found');
     }
 
     await this.Send({ mailingId });
+
+    return mailing;
   }
 }
