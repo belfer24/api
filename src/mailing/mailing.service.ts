@@ -136,11 +136,9 @@ export class MailingService {
         .limit(1)
         .sort({ $natural: -1 });
 
-      if (mailing) {
-        return mailing[0];
-      } else {
-        return {};
-      }
+      if (!mailing) return {};
+               
+      return mailing[0];     
     } else {
       throw Error('User not found!');
     }
