@@ -138,7 +138,7 @@ export class MailingService {
         .limit(1)
         .sort({ $natural: -1 });
 
-      if (!mailing) return {};
+      if (!mailing.length) return {};
                
       return mailing[0];     
     } else {
