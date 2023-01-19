@@ -35,7 +35,7 @@ export class MailingController {
   }
 
   @Get('get')
-  async IsUserSending(@Headers() headers: HeadersDto) {
+  async GetMailing(@Headers() headers: HeadersDto) {
     return this.mailingService.GetMailing(headers);
   }
 }

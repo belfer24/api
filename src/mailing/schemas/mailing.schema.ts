@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-export type MailingDocument = Mailing & Document;
+export type MailingDocument = Mailing & Document<string>;
 
 @Schema()
 class Mail {
@@ -19,6 +19,9 @@ class Mail {
 
   @Prop()
   sentAt: number;
+
+  @Prop()
+  isInProcess: boolean;
 }
 
 const MailSchema = SchemaFactory.createForClass(Mail);
