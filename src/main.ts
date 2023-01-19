@@ -9,7 +9,7 @@ async function bootstrap() {
     origin: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
-});
+  });
   await app.listen(port);
   console.log('App started at port:', port);
 }

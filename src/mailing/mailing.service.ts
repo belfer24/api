@@ -8,6 +8,7 @@ import { User, UserDocument } from '@/users/schemas/user.schema';
 import { IMails } from './mailing.interface';
 import { Mailing, MailingDocument } from './schemas/mailing.schema';
 import { UTCDate } from '@/utils/UTCDate';
+import { OutlookHelper } from '@/helpers/outlook/outlook';
 
 @Injectable()
 export class MailingService {
@@ -19,10 +20,11 @@ export class MailingService {
     @InjectModel(Mailing.name)
     private readonly MailingCollection: Model<MailingDocument>,
     private readonly _CloudTasks: CloudTasks,
+    private readonly _OutlookHelper: OutlookHelper,
   ) {}
 
   async Start({ mails, csvData, refreshToken }: IMails.Service.Start.Body) {
-    const delay = 30;
+    const delay = 180;
 
     const user = await this.UserCollection.findOne({ refreshToken });
 
@@ -75,7 +77,7 @@ export class MailingService {
     if (!mailing) throw new Error('Mailing not found!');
 
     if (mailing.isInProcess && !mailing.hasError) {
-      const delay = 30;
+      const delay = 180;
       const notSentMails = mailing.mails.filter((mail) => mail.isSent !== true);
 
       const mail = notSentMails[0];
@@ -84,12 +86,12 @@ export class MailingService {
 
       if (!user) throw new Error('User not found!');
 
-      // await this._OutlookHelper.ConnectToGraph(user.refreshToken);
-      // await this._OutlookHelper.SendMessage({
-      //   subject: mail.subject,
-      //   text: mail.text,
-      //   to: mail.to,
-      // });
+      await this._OutlookHelper.ConnectToGraph(user.refreshToken);
+      await this._OutlookHelper.SendMessage({
+        subject: mail.subject,
+        text: mail.text,
+        to: mail.to,
+      });
 
       await this.MailingCollection.updateOne(
         { _id: mailingId, 'mails.to': mail.to },
